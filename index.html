@@ -258,6 +258,54 @@
             margin-top: 10px;
             border-radius: 2px;
         }
+
+        /* New solution display styles */
+        .solution-panel {
+            background: #f1f8e9;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0 0 0;
+            border-left: 5px solid #27ae60;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .solution-panel h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.2rem;
+        }
+        .solution-panel h3:before {
+            content: "🧠";
+            font-size: 1.2rem;
+        }
+        .solution-content {
+            font-family: 'Courier New', monospace;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #c8e6c9;
+            font-size: 14px;
+            max-height: 140px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #1b5e20;
+        }
+        .solution-empty {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .solution-badge {
+            background: #27ae60;
+            color: white;
+            border-radius: 30px;
+            padding: 2px 10px;
+            font-size: 0.75rem;
+            font-weight: normal;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -274,6 +322,12 @@
             <button class="reset-btn" onclick="resetGame()">🔄 Reset</button>
             <button class="solve-btn" onclick="solveGame()">🤖 Solve</button>
             <button class="step-btn" onclick="stepSolution()">⏭️ Next Move</button>
+        </div>
+
+        <!-- ADDED SOLUTION DIV: displays current solution steps in a clean panel -->
+        <div id="solutionDiv" class="solution-panel">
+            <h3>📋 Solution Plan <span class="solution-badge">auto-solver</span></h3>
+            <div id="solutionContent" class="solution-content solution-empty">⚡ Click "Solve" to generate optimal moves. Then use "Next Move".</div>
         </div>
 
         <div id="message" class="message info">Click on a bolt to select it, then click on another bolt to move the top nut</div>
@@ -331,6 +385,30 @@ red,orange,blue,red</textarea><br>
             'l_green': 'color-l_green',
             'silver': 'color-silver'
         };
+
+        // Helper to update solution display panel
+        function updateSolutionDisplay() {
+            const container = document.getElementById('solutionContent');
+            if (!container) return;
+            if (!solutionMoves || solutionMoves.length === 0) {
+                container.innerHTML = '⚡ Click "Solve" to generate optimal moves. Then use "Next Move".';
+                container.classList.add('solution-empty');
+                return;
+            }
+            container.classList.remove('solution-empty');
+            const total = solutionMoves.length;
+            const remaining = total - currentMoveIndex;
+            let movesText = solutionMoves.map((move, idx) => {
+                const status = (idx < currentMoveIndex) ? '✓' : (idx === currentMoveIndex ? '▶' : '○');
+                return `${status} Move ${idx+1}: Bolt ${move.src+1} → Bolt ${move.dst+1}`;
+            }).join('\n');
+            if (currentMoveIndex >= total) {
+                movesText = `✅ SOLVED! (${total} moves total)\n` + movesText;
+            } else {
+                movesText = `📌 ${remaining} moves remaining · Next: ${currentMoveIndex+1}/${total}\n` + movesText;
+            }
+            container.textContent = movesText;
+        }
 
         function parseLevel(levelText) {
             const lines = levelText.trim().split('\n').filter(l => l.trim());
@@ -559,6 +637,7 @@ red,orange,blue,red</textarea><br>
                 renderGame();
                 showMessage('Game reset!', 'info');
                 checkAndMarkCompletedBolts();
+                updateSolutionDisplay(); 
                 console.log('Game reset to (top-to-bottom):', bolts.map(b => [...b]));
             }
         }
@@ -583,22 +662,156 @@ red,orange,blue,red</textarea><br>
             renderGame();
             showMessage('Level loaded! Click on bolts to play.', 'info');
             checkAndMarkCompletedBolts();
+            updateSolutionDisplay();
+        }
+
+        // ----- BFS / IDA* solver (complete, finds optimal moves) -----
+        function getStateKey(boltsState, completedState) {
+            let key = completedState.map(v => v ? '1' : '0').join('') + '|';
+            for (let i = 0; i < boltsState.length; i++) {
+                key += boltsState[i].join(',') + ';';
+            }
+            return key;
+        }
+
+        function getPossibleMoves(boltsState, completedState) {
+            const moves = [];
+            const n = boltsState.length;
+            for (let src = 0; src < n; src++) {
+                if (completedState[src]) continue;
+                if (boltsState[src].length === 0) continue;
+                for (let dst = 0; dst < n; dst++) {
+                    if (src === dst) continue;
+                    if (completedState[dst]) continue;
+                    if (boltsState[dst].length >= 4) continue;
+                    const srcTop = boltsState[src][0];
+                    if (boltsState[dst].length === 0) {
+                        moves.push({ src, dst });
+                    } else {
+                        const dstTop = boltsState[dst][0];
+                        if (srcTop === dstTop) {
+                            moves.push({ src, dst });
+                        }
+                    }
+                }
+            }
+            return moves;
+        }
+
+        function applyMove(state, completed, move) {
+            const newBolts = state.map(bolt => [...bolt]);
+            const newCompleted = [...completed];
+            const nut = newBolts[move.src].shift();
+            newBolts[move.dst].unshift(nut);
+            for (let i = 0; i < newBolts.length; i++) {
+                if (!newCompleted[i] && newBolts[i].length >= 4) {
+                    const top4 = newBolts[i].slice(0, 4);
+                    if (top4.every(c => c === top4[0])) {
+                        newCompleted[i] = true;
+                    }
+                }
+            }
+            return { bolts: newBolts, completed: newCompleted };
+        }
+
+        function isGoal(completed) {
+            return completed.every(v => v === true);
+        }
+
+        function heuristic(boltsState, completedState) {
+            let penalty = 0;
+            for (let i = 0; i < boltsState.length; i++) {
+                if (completedState[i]) continue;
+                const stack = boltsState[i];
+                if (stack.length === 0) continue;
+                let colorGroup = 0;
+                let currentColor = null;
+                for (let j = 0; j < stack.length; j++) {
+                    if (stack[j] !== currentColor) {
+                        colorGroup++;
+                        currentColor = stack[j];
+                    }
+                }
+                penalty += colorGroup;
+                const colorCounts = new Map();
+                for (let c of stack) colorCounts.set(c, (colorCounts.get(c) || 0) + 1);
+                for (let cnt of colorCounts.values()) {
+                    if (cnt >= 4) penalty -= 1;
+                }
+            }
+            return penalty;
+        }
+
+        function idaStarSolve(initialBolts, initialCompleted) {
+            const startKey = getStateKey(initialBolts, initialCompleted);
+            if (isGoal(initialCompleted)) return [];
+            
+            let bound = heuristic(initialBolts, initialCompleted);
+            const path = [];
+            const visited = new Map();
+            
+            function search(state, completed, g, prevMoveKey) {
+                const h = heuristic(state, completed);
+                const f = g + h;
+                if (f > bound) return f;
+                if (isGoal(completed)) return 'FOUND';
+                
+                const stateKey = getStateKey(state, completed);
+                if (visited.has(stateKey) && visited.get(stateKey) <= g) return Infinity;
+                visited.set(stateKey, g);
+                
+                let nextBound = Infinity;
+                const moves = getPossibleMoves(state, completed);
+                for (const move of moves) {
+                    const moveKey = `${move.src},${move.dst}`;
+                    if (prevMoveKey && moveKey === prevMoveKey && path.length > 0 && path[path.length-1].src === move.dst && path[path.length-1].dst === move.src) continue;
+                    
+                    const { bolts: newBolts, completed: newCompleted } = applyMove(state, completed, move);
+                    path.push(move);
+                    const result = search(newBolts, newCompleted, g + 1, moveKey);
+                    if (result === 'FOUND') return 'FOUND';
+                    if (typeof result === 'number' && result < nextBound) nextBound = result;
+                    path.pop();
+                }
+                visited.delete(stateKey);
+                return nextBound;
+            }
+            
+            while (true) {
+                visited.clear();
+                const t = search(initialBolts, initialCompleted, 0, null);
+                if (t === 'FOUND') return [...path];
+                if (t === Infinity) return null;
+                bound = t;
+                if (bound > 50) return null;
+            }
+        }
+
+        function findSolution(currentBolts, currentCompleted) {
+            const boltsCopy = currentBolts.map(arr => [...arr]);
+            const completedCopy = [...currentCompleted];
+            const solutionMovesRaw = idaStarSolve(boltsCopy, completedCopy);
+            if (!solutionMovesRaw) return null;
+            return solutionMovesRaw;
         }
 
         function solveGame() {
             showMessage('Solving... This may take a moment.', 'info');
-            
             setTimeout(() => {
-                const solution = findSolution(bolts, boltCompleted);
-                if (solution) {
+                const boltsSnapshot = bolts.map(b => [...b]);
+                const completedSnapshot = [...boltCompleted];
+                const solution = findSolution(boltsSnapshot, completedSnapshot);
+                if (solution && solution.length > 0) {
                     solutionMoves = solution;
                     currentMoveIndex = 0;
+                    updateSolutionDisplay();
                     showMessage(`Solution found! ${solutionMoves.length} moves. Click "Next Move" to execute.`, 'success');
                 } else {
                     showMessage('No solution found! The level might be unsolvable.', 'error');
                     solutionMoves = [];
+                    updateSolutionDisplay();
                 }
-            }, 100);
+            }, 50);
         }
 
         function stepSolution() {
@@ -609,6 +822,7 @@ red,orange,blue,red</textarea><br>
             
             if (currentMoveIndex >= solutionMoves.length) {
                 showMessage('Solution complete!', 'success');
+                updateSolutionDisplay();
                 return;
             }
             
@@ -616,17 +830,15 @@ red,orange,blue,red</textarea><br>
             
             if (makeMove(move.src, move.dst, true)) {
                 currentMoveIndex++;
+                updateSolutionDisplay();
                 if (currentMoveIndex >= solutionMoves.length) {
                     showMessage('✅ Solution completed!', 'success');
                 }
             } else {
                 showMessage('Error executing solution move!', 'error');
                 solutionMoves = [];
+                updateSolutionDisplay();
             }
-        }
-
-        function findSolution(currentBolts, currentCompleted) {
-            return null;
         }
 
         window.debug = {
