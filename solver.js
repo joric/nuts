@@ -4,11 +4,10 @@ function findSolution(bolts) {
     let nextId = 1;
 
     // 1. Bitwise State Encoding
-    // Encode the start state (each bolt is a 16-bit integer, 4 bits per nut)
     const startState = new Uint16Array(16);
     for (let i = 0; i < numBolts; i++) {
         let b = 0;
-        // We must map the bottom nut to shift 0, and the top nut to the highest shift.
+        // Bolts[i][0] is the top nut. Shift the bottom nut to 0, top to highest.
         for (let j = 0; j < bolts[i].length; j++) {
             const color = bolts[i][j];
             if (!colorToId[color]) colorToId[color] = nextId++;
@@ -18,7 +17,6 @@ function findSolution(bolts) {
         startState[i] = b;
     }
 
-    // Bitwise operation masks
     const MASKS = [0x0000, 0x000F, 0x00FF, 0x0FFF, 0xFFFF];
     const POP_MASKS = [0, 0, 0x000F, 0x00FF, 0x0FFF];
 
@@ -27,7 +25,6 @@ function findSolution(bolts) {
     }
 
     // 2. The "Killer" Heuristic
-    // Calculates total nuts minus the largest valid bottom foundation for each color.
     function getHeuristic(state) {
         const maxF = new Int32Array(16);
         let totalNuts = 0;
@@ -60,7 +57,7 @@ function findSolution(bolts) {
         return h;
     }
 
-    // 3. Pre-allocated Memory Arena (Bypasses V8 Garbage Collector)
+    // 3. Pre-allocated Memory Arena
     const MAX_NODES = 4000000;
     const states = new Uint16Array(MAX_NODES * 16);
     const gVals = new Int32Array(MAX_NODES);
@@ -71,7 +68,7 @@ function findSolution(bolts) {
     let nodeCount = 0;
 
     function addNode(state, g, h, pIdx, src, dst) {
-        if (nodeCount >= MAX_NODES) return -1; // Safety limit
+        if (nodeCount >= MAX_NODES) return -1;
         const idx = nodeCount++;
         states.set(state, idx * 16);
         gVals[idx] = g;
@@ -82,7 +79,6 @@ function findSolution(bolts) {
         return idx;
     }
 
-    // Fast state hashing (V8 optimizes string keys perfectly)
     function encode(state) {
         return String.fromCharCode(
             state[0], state[1], state[2], state[3], 
@@ -99,7 +95,7 @@ function findSolution(bolts) {
     function compare(idxA, idxB) {
         const fA = gVals[idxA] + hVals[idxA];
         const fB = gVals[idxB] + hVals[idxB];
-        if (fA === fB) return hVals[idxA] - hVals[idxB]; // Tie-breaker: closer to goal
+        if (fA === fB) return hVals[idxA] - hVals[idxB]; 
         return fA - fB;
     }
 
@@ -149,7 +145,7 @@ function findSolution(bolts) {
         const pSrc = movesSrc[currIdx];
         const pDst = movesDst[currIdx];
 
-        // Win condition
+        // Win condition (h === 0 means all nuts are perfectly stacked into foundations of 4)
         if (h === 0) {
             const path = [];
             let curr = currIdx;
@@ -170,7 +166,6 @@ function findSolution(bolts) {
             const srcCount = getCount(srcBolt);
             const nut = (srcBolt >> ((srcCount - 1) * 4)) & 0xF;
             
-            // Bitwise uniform check
             const isUniform = srcBolt === ((nut * 0x1111) & MASKS[srcCount]);
             let emptyUsed = false;
 
@@ -192,19 +187,16 @@ function findSolution(bolts) {
                         if (((dstBolt >> ((dstCount - 1) * 4)) & 0xF) !== nut) continue;
                     }
 
-                    // Generate next state branchless
                     const nextState = new Uint16Array(tempState);
                     nextState[src] = srcBolt & POP_MASKS[srcCount];
                     
-                    let newDstBolt = dstBolt | (nut << (dstCount * 4));
-                    if (newDstBolt === nut * 0x1111) newDstBolt = 0; // Clear completed bolt
-                    nextState[dst] = newDstBolt;
+                    // We no longer clear the bolt if it hits 4! It stays as a solid 4-nut integer.
+                    nextState[dst] = dstBolt | (nut << (dstCount * 4));
 
                     const nextG = g + 1;
                     const key = encode(nextState);
                     const visitedG = visited.get(key);
 
-                    // Insert if it's a new state or a shorter path to a known state
                     if (visitedG === undefined || nextG < visitedG) {
                         visited.set(key, nextG);
                         const nextH = getHeuristic(nextState);
