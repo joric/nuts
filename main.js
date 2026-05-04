@@ -481,7 +481,7 @@ function stepSolution() {
     currentMoveIndex++;
     updateSolutionDisplay();
     if (currentMoveIndex >= solutionMoves.length) {
-      showMessage('✅ Solution completed!', 'success');
+      showMessage('Solution completed!', 'success');
     }
   } else {
     showMessage('Error executing solution move!', 'error');
