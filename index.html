@@ -1,904 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bolts and Nuts</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolts and Nuts</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<script src="main.js"></script>
+<script src="solver.js"></script>
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
+<style>
+.game-area {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f0f0f0;
+  border-radius: 15px;
+  align-items: flex-end;
+}
 
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-        }
+.bolt-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
 
-        .description {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
+.bolt {
+  background: linear-gradient(145deg, #b0b7c6, #8f9bb3);
+  width: 75px;
+  min-height: 200px;
+  border-radius: 24px 24px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 14px rgba(0,0,0,0.2);
+  border-bottom: 3px solid #5d6e8a;
+  justify-content: flex-end;
+}
 
-        .game-area {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f0f0f0;
-            border-radius: 15px;
-            align-items: flex-end;
-        }
 
-        .bolt-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
+.bolt.selected {
+  box-shadow: 0 0 0 3px #ffc107, 0 8px 18px black;
+  background: linear-gradient(145deg, #c0c9dc, #9aa7c2);
+}
+.bolt.completed {
+  background: linear-gradient(145deg, #999, #888);
+  box-shadow: 0 0 0 2px #2ecc71;
+  position: relative;
+}
+.bolt.completed::after {
+  content: "✓";
+  position: absolute;
+  font-size: 2.4rem;
+  font-weight: bold;
+  color: #2ecc71;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.nut {
+  width: 52px;
+  height: 32px;
+  margin: 4px 0;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.2);
+}
 
-        .bolt {
-            background: linear-gradient(to bottom, #aaa, #999);
-            width: 50px;
-            min-height: 150px;
-            border-radius: 15px 15px 5px 5px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 10px 5px;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+.color-blue { background: deepskyblue; }
+.color-red { background: orangered; }
+.color-orange { background: orange; }
+.color-green { background: seagreen; }
+.color-yellow { background: #f1c40f; }
+.color-purple { background: #9b59b6; }
+.color-pink { background: #e84393; }
+.color-brown { background: #8B4513; }
+.color-lime { background: yellowgreen; }
+.color-l_blue { background: #87ceeb; }
+.color-l_red { background: #ff6b6b; }
+.color-l_green { background: #98fb98; }
+.color-silver { background: #c0c0c0; }
 
-        .bolt.selected {
-            transform: scale(1.05);
-            box-shadow: 0 0 0 3px #ffd700, 0 5px 20px rgba(0,0,0,0.3);
-        }
+</style>
 
-        .bolt.completed {
-            background: linear-gradient(to bottom, #2c3e50, #34495e);
-            box-shadow: 0 0 0 2px #27ae60, 0 5px 15px rgba(0,0,0,0.3);
-            position: relative;
-        }
-
-        .bolt.completed::before {
-            content: "✓";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            color: #27ae60;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .bolt.completed::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(39, 174, 96, 0.2);
-            border-radius: 15px 15px 5px 5px;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .nut {
-            width: 50px;
-            height: 30px;
-            margin: 3px 0;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: all 0.2s;
-        }
-
-        .bolt-header {
-            text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .bolt-number {
-            background: #333;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: inline-block;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #667eea;
-            color: white;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .reset-btn { background: #f39c12; }
-        .solve-btn { background: #27ae60; }
-        .step-btn { background: #3498db; }
-
-        .message {
-            text-align: center;
-            padding: 15px;
-            margin: 20px;
-            border-radius: 10px;
-            font-weight: bold;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .moves-list {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
-        }
-
-        .moves-list h3 {
-            margin-top: 0;
-            color: #333;
-        }
-
-        .moves-list pre {
-            margin: 0;
-            white-space: pre-wrap;
-        }
-
-        .level-input {
-            margin: 20px;
-            text-align: center;
-        }
-
-        textarea {
-            width: 80%;
-            max-width: 500px;
-            padding: 10px;
-            font-family: monospace;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            resize: vertical;
-        }
-
-        .color-blue { background: deepskyblue; }
-        .color-red { background: orangered; }
-        .color-orange { background: orange; }
-        .color-green { background: seagreen; }
-        .color-yellow { background: #f1c40f; }
-        .color-purple { background: #9b59b6; }
-        .color-pink { background: #e84393; }
-        .color-brown { background: #8B4513; }
-        .color-lime { background: yellowgreen; }
-        .color-l_blue { background: #87ceeb; }
-        .color-l_red { background: #ff6b6b; }
-        .color-l_green { background: #98fb98; }
-        .color-silver { background: #c0c0c0; }
-        
-        .ground {
-            width: 100%;
-            height: 4px;
-            background: #333;
-            margin-top: 10px;
-            border-radius: 2px;
-        }
-
-        /* New solution display styles */
-        .solution-panel {
-            background: #f1f8e9;
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0 0 0;
-            border-left: 5px solid #27ae60;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .solution-panel h3 {
-            margin: 0 0 8px 0;
-            color: #2c3e50;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.2rem;
-        }
-        .solution-panel h3:before {
-            content: "🧠";
-            font-size: 1.2rem;
-        }
-        .solution-content {
-            font-family: 'Courier New', monospace;
-            background: #ffffff;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #c8e6c9;
-            font-size: 14px;
-            max-height: 140px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-word;
-            color: #1b5e20;
-        }
-        .solution-empty {
-            color: #7f8c8d;
-            font-style: italic;
-        }
-        .solution-badge {
-            background: #27ae60;
-            color: white;
-            border-radius: 30px;
-            padding: 2px 10px;
-            font-size: 0.75rem;
-            font-weight: normal;
-            margin-left: 10px;
-        }
-
-        .level-selector {
-            width: 100%;
-            text-align: center;
-            padding-bottom: 10px;
-        }
-
-    </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Bolts and Nuts</h1>
-        <div class="description">
-            Move nuts from top of bolts. Can only place on matching color or empty bolt.<br>
-            Max 4 nuts per bolt. When 4 matching colors stack, bolt is completed!
-        </div>
 
-        <div class="level-selector">
-            Select Level: 
-            <select id="levelSelector" onchange="select_level()">
-            </select>
-        </div>
+<div class="container p-3">
+  <h1 class="text-center">Bolts and Nuts</h1>
 
-        <div class="game-area" id="gameArea"></div>
+  <div class="text-center p-1">
+    <div id="message">Click on a bolt to select it, then click on another bolt to move the top nut</div>
+  </div>
 
-        <div class="controls">
-            <button class="reset-btn" onclick="resetGame()">🔄 Reset</button>
-            <button class="solve-btn" onclick="solveGame()">🤖 Solve</button>
-            <button class="step-btn" onclick="stepSolution()">⏭️ Next Move</button>
-        </div>
+  <div class="game-area d-flex flex-wrap align-items-end bg-light p-4 rounded" id="gameArea">
+  </div>
 
-        <!-- ADDED SOLUTION DIV: displays current solution steps in a clean panel -->
-        <div id="solutionDiv" class="solution-panel">
-            <h3>📋 Solution Plan <span class="solution-badge">auto-solver</span></h3>
-            <div id="solutionContent" class="solution-content solution-empty">⚡ Click "Solve" to generate optimal moves. Then use "Next Move".</div>
-        </div>
+  <div class="controls text-center p-1">
+    <button class="reset-btn btn btn-danger" onclick="resetGame()">Reset</button>
+    <button class="solve-btn btn btn-success" onclick="solveGame(); document.querySelector('#nav-home-tab').click();">Solve</button>
+    <button class="step-btn  btn btn-primary" onclick="stepSolution()">Next Move</button>
+  </div>
 
-        <div id="message" class="message info">Click on a bolt to select it, then click on another bolt to move the top nut</div>
 
-        <div class="level-input">
-            <textarea id="levelInput" rows="5" cols="50">5
-blue,red,orange,blue
-blue,red,orange,orange
-red,orange,blue,red</textarea><br>
-            <button onclick="loadLevel()">Load Level from Text</button>
-        </div>
-        
-        <div class="moves-list">
-            <h3>📝 Moves Log</h3>
-            <pre id="movesLog">No moves yet...</pre>
-        </div>
+  <nav class="pt-1">
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+      <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Solution</button>
+      <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Moves Log</button>
+      <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Select Level</button>
+    </div>
+  </nav>
+
+
+  <div class="tab-content" id="nav-tabContent">
+
+    <div class="tab-pane fade show active p-3" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+      <div id="solutionDiv" class="solution-panel">
+        <div id="solutionContent" class="solution-content solution-empty">Click "Solve" to generate optimal moves. Then use "Next Move".</div>
+      </div>
     </div>
 
-    <script>
-        let bolts = [];
-        let boltCompleted = [];
-        let selectedBolt = null;
-        let solutionMoves = [];
-        let currentMoveIndex = 0;
-        let moveLog = [];
-        let numBolts = 0;
+    <div class="tab-pane fade p-3" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+      <div class="moves-list">
+        <pre id="movesLog"></pre>
+      </div>
+    </div>
 
-        // --- Configs for Programmer ---
-        // Remap colors (e.g., {"blue": "orange", "orange": "blue"})
-        const colorRemap = {};
-        //const colorRemap = {};//{"orange": "lime", "red": "blue", "blue": "orange"}; //level1
-        //const colorRemap = {"l_green": "orange", "orange": "lime", "l_red":"red", "red": "green"};
-        
-        // Remap bolt positions 0-indexed (e.g., {0: 1, 1: 0})
-        const boltRemap = {}; 
-        //const boltRemap = {0:6, 6:0}; 
-        // ------------------------------
+    <div class="tab-pane fade p-3" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
 
-        const colorMap = {
-            'blue': 'color-blue',
-            'red': 'color-red',
-            'orange': 'color-orange',
-            'green': 'color-green',
-            'yellow': 'color-yellow',
-            'purple': 'color-purple',
-            'pink': 'color-pink',
-            'brown': 'color-brown',
-            'lime': 'color-lime',
-            'l_blue': 'color-l_blue',
-            'l_red': 'color-l_red',
-            'l_green': 'color-l_green',
-            'silver': 'color-silver'
-        };
+      <div class="container p-3">
+          <div class="row g-3 align-items-start">
+              <div class="col-md-3">
+                  <label class="form-label fw-bold">Level Selector</label>
+              </div>
+              <div class="col-md-9">
+                  <select class="form-select" id="levelSelector" onchange="select_level()"></select>
+              </div>
+          </div>
 
-        // Helper to update solution display panel
-        function updateSolutionDisplay() {
-            const container = document.getElementById('solutionContent');
-            if (!container) return;
-            if (!solutionMoves || solutionMoves.length === 0) {
-                container.innerHTML = '⚡ Click "Solve" to generate optimal moves. Then use "Next Move".';
-                container.classList.add('solution-empty');
-                return;
-            }
-            container.classList.remove('solution-empty');
-            const total = solutionMoves.length;
-            const remaining = total - currentMoveIndex;
-            let movesText = solutionMoves.map((move, idx) => {
-                const status = (idx < currentMoveIndex) ? '✓' : (idx === currentMoveIndex ? '▶' : '○');
-                return `${status} Move ${idx+1}: Bolt ${move.src+1} → Bolt ${move.dst+1}`;
-            }).join('\n');
-            if (currentMoveIndex >= total) {
-                movesText = `✅ SOLVED! (${total} moves total)\n` + movesText;
-            } else {
-                movesText = `📌 ${remaining} moves remaining · Next: ${currentMoveIndex+1}/${total}\n` + movesText;
-            }
-            container.textContent = movesText;
-        }
+          <div class="row g-3 mt-2 align-items-start">
+              <div class="col-md-3">
+                  <label class="form-label fw-bold">Level Data</label>
+              </div>
+              <div class="col-md-9">
+                  <textarea id="levelInput" class="form-control" rows="5">5</textarea>
+              </div>
+          </div>
 
-        function parseLevel(levelText) {
-            const lines = levelText.trim().split('\n').filter(l => l.trim());
-            if (lines.length === 0) return null;
-            
-            const num = parseInt(lines[0]);
-            let stacks = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const colors = lines[i].split(',').map(c => {
-                    const trimmed = c.trim();
-                    return colorRemap[trimmed] || trimmed;
-                });
-                stacks.push(colors);
-            }
-            
-            const emptyBolts = num - stacks.length;
-            for (let i = 0; i < emptyBolts; i++) {
-                stacks.push([]);
-            }
-            
-            if (Object.keys(boltRemap).length > 0) {
-                const remappedStacks = new Array(num).fill().map(() => []);
-                for (let i = 0; i < num; i++) {
-                    const targetIdx = boltRemap[i] !== undefined ? boltRemap[i] : i;
-                    if (targetIdx < num) {
-                        remappedStacks[targetIdx] = stacks[i];
-                    }
-                }
-                stacks = remappedStacks;
-            }
+          <div class="row g-3 mt-2">
+              <div class="col-md-3"></div>
+              <div class="col-md-9">
+                  <button onclick="loadLevel()" class="btn btn-primary">Load Level from Text</button>
+              </div>
+          </div>
+      </div>
 
-            return { numBolts: num, stacks: stacks };
-        }
 
-        function checkAndMarkCompletedBolts() {
-            let changed = false;
-            for (let i = 0; i < bolts.length; i++) {
-                if (boltCompleted[i]) continue;
-                
-                if (bolts[i].length >= 4) {
-                    const top4 = bolts[i].slice(0, 4);
-                    if (top4.every(color => color === top4[0])) {
-                        boltCompleted[i] = true;
-                        changed = true;
-                        addMoveToLog(`✅ Bolt ${i + 1} completed with 4 ${top4[0]} nuts!`);
-                    }
-                }
-            }
-            if (changed) {
-                renderGame();
-                checkWinCondition();
-                return true;
-            }
-            return false;
-        }
+    </div>
+  </div>
 
-        function canMove(src, dst) {
-            if (src === dst) return false;
-            if (boltCompleted[src]) return false;
-            if (bolts[src].length === 0) return false;
-            if (boltCompleted[dst]) return false;
-            if (bolts[dst].length >= 4) return false;
-            
-            const srcTop = bolts[src][0];
-            if (bolts[dst].length === 0) return true;
-            
-            const dstTop = bolts[dst][0];
-            return srcTop === dstTop;
-        }
 
-        function makeMove(src, dst, record = true) {
-            if (!canMove(src, dst)) return false;
-            
-            const nut = bolts[src].shift();
-            bolts[dst].unshift(nut);
-            
-            if (record) {
-                addMoveToLog(`${src + 1} → ${dst + 1} (${nut})`);
-            }
-            
-            renderGame();
-            
-            while (checkAndMarkCompletedBolts()) {
-                renderGame();
-            }
-            
-            checkWinCondition();
-            return true;
-        }
+</div> <!--/top-level-container-->
 
-        function addMoveToLog(move) {
-            moveLog.push(move);
-            updateMovesLog();
-        }
+<a href="https://github.com/joric/bolts-and-nuts/" target="_blank" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
 
-        function updateMovesLog() {
-            const logElement = document.getElementById('movesLog');
-            if (moveLog.length === 0) {
-                logElement.textContent = 'No moves yet...';
-            } else {
-                logElement.textContent = moveLog.join('\n');
-                logElement.scrollTop = logElement.scrollHeight;
-            }
-        }
-
-        function checkWinCondition() {
-            const allCompleted = bolts.every((_, i) => boltCompleted[i] || bolts[i].length === 0);
-            if (allCompleted && bolts.some((_, i) => boltCompleted[i])) {
-                showMessage('🎉 Congratulations! All bolts completed! 🎉', 'success');
-                return true;
-            }
-            return false;
-        }
-
-        function showMessage(msg, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.className = `message ${type}`;
-            messageDiv.textContent = msg;
-            setTimeout(() => {
-                if (document.getElementById('message').textContent === msg) {
-                    messageDiv.className = 'message info';
-                    messageDiv.textContent = 'Click on a bolt to select it, then click on another bolt to move the top nut';
-                }
-            }, 3000);
-        }
-
-        function renderGame() {
-            const gameArea = document.getElementById('gameArea');
-            gameArea.innerHTML = '';
-            
-            for (let i = 0; i < bolts.length; i++) {
-                const boltContainer = document.createElement('div');
-                boltContainer.className = 'bolt-container';
-                
-                const bolt = document.createElement('div');
-                bolt.className = 'bolt';
-                if (selectedBolt === i) {
-                    bolt.classList.add('selected');
-                }
-                if (boltCompleted[i]) {
-                    bolt.classList.add('completed');
-                }
-                
-                const nutContainer = document.createElement('div');
-                nutContainer.style.display = 'flex';
-                nutContainer.style.flexDirection = 'column';
-                nutContainer.style.width = '100%';
-                nutContainer.style.alignItems = 'center';
-                nutContainer.style.justifyContent = 'flex-start';
-                
-                for (let j = 0; j < bolts[i].length; j++) {
-                    const nut = document.createElement('div');
-                    const color = bolts[i][j];
-                    nut.className = `nut ${colorMap[color] || 'color-blue'}`;
-                    nut.textContent = color;
-                    nutContainer.appendChild(nut);
-                }
-                
-                bolt.appendChild(nutContainer);
-                
-                const header = document.createElement('div');
-                header.className = 'bolt-header';
-                header.innerHTML = `<span class="bolt-number">Bolt ${i + 1}</span><br>${bolts[i].length}/4`;
-                
-                boltContainer.appendChild(bolt);
-                boltContainer.appendChild(header);
-                
-                bolt.onclick = (function(boltIndex) {
-                    return function() {
-                        handleBoltClick(boltIndex);
-                    };
-                })(i);
-                
-                gameArea.appendChild(boltContainer);
-            }
-            
-            const ground = document.createElement('div');
-            ground.className = 'ground';
-            gameArea.appendChild(ground);
-        }
-
-        function handleBoltClick(boltIndex) {
-            if (solutionMoves.length > 0 && currentMoveIndex < solutionMoves.length) {
-                showMessage('Auto-solver is active. Press Reset to play manually.', 'error');
-                return;
-            }
-            
-            if (boltCompleted[boltIndex]) {
-                showMessage(`Bolt ${boltIndex + 1} is completed! Cannot move from or to completed bolts.`, 'error');
-                return;
-            }
-            
-            if (selectedBolt === null) {
-                if (bolts[boltIndex].length > 0) {
-                    selectedBolt = boltIndex;
-                    renderGame();
-                    const topNut = bolts[boltIndex][0];
-                    showMessage(`Selected bolt ${boltIndex + 1} (top nut: ${topNut})`, 'info');
-                } else {
-                    showMessage('Cannot select empty bolt!', 'error');
-                }
-            } else {
-                if (makeMove(selectedBolt, boltIndex, true)) {
-                    selectedBolt = null;
-                    renderGame();
-                } else {
-                    showMessage('Invalid move! Check color match and bolt capacity.', 'error');
-                    selectedBolt = null;
-                    renderGame();
-                }
-            }
-        }
-
-        function resetGame() {
-            const levelText = document.getElementById('levelInput').value;
-            const parsed = parseLevel(levelText);
-            if (parsed) {
-                bolts = parsed.stacks.map(stack => [...stack]);
-                boltCompleted = new Array(bolts.length).fill(false);
-                selectedBolt = null;
-                solutionMoves = [];
-                currentMoveIndex = 0;
-                moveLog = [];
-                updateMovesLog();
-                renderGame();
-                showMessage('Game reset!', 'info');
-                checkAndMarkCompletedBolts();
-                updateSolutionDisplay(); 
-                console.log('Game reset to (top-to-bottom):', bolts.map(b => [...b]));
-            }
-        }
-
-        function loadLevel() {
-            const levelText = document.getElementById('levelInput').value;
-            const parsed = parseLevel(levelText);
-            
-            if (!parsed) {
-                showMessage('Invalid level format!', 'error');
-                return;
-            }
-            
-            numBolts = parsed.numBolts;
-            bolts = parsed.stacks.map(stack => [...stack]);
-            boltCompleted = new Array(bolts.length).fill(false);
-            selectedBolt = null;
-            solutionMoves = [];
-            currentMoveIndex = 0;
-            moveLog = [];
-            updateMovesLog();
-            renderGame();
-            showMessage('Level loaded! Click on bolts to play.', 'info');
-            checkAndMarkCompletedBolts();
-            updateSolutionDisplay();
-        }
-
-        // ----- BFS / IDA* solver (complete, finds optimal moves) -----
-        function getStateKey(boltsState, completedState) {
-            let key = completedState.map(v => v ? '1' : '0').join('') + '|';
-            for (let i = 0; i < boltsState.length; i++) {
-                key += boltsState[i].join(',') + ';';
-            }
-            return key;
-        }
-
-        function getPossibleMoves(boltsState, completedState) {
-            const moves = [];
-            const n = boltsState.length;
-            for (let src = 0; src < n; src++) {
-                if (completedState[src]) continue;
-                if (boltsState[src].length === 0) continue;
-                for (let dst = 0; dst < n; dst++) {
-                    if (src === dst) continue;
-                    if (completedState[dst]) continue;
-                    if (boltsState[dst].length >= 4) continue;
-                    const srcTop = boltsState[src][0];
-                    if (boltsState[dst].length === 0) {
-                        moves.push({ src, dst });
-                    } else {
-                        const dstTop = boltsState[dst][0];
-                        if (srcTop === dstTop) {
-                            moves.push({ src, dst });
-                        }
-                    }
-                }
-            }
-            return moves;
-        }
-
-        function applyMove(state, completed, move) {
-            const newBolts = state.map(bolt => [...bolt]);
-            const newCompleted = [...completed];
-            const nut = newBolts[move.src].shift();
-            newBolts[move.dst].unshift(nut);
-            for (let i = 0; i < newBolts.length; i++) {
-                if (!newCompleted[i] && newBolts[i].length >= 4) {
-                    const top4 = newBolts[i].slice(0, 4);
-                    if (top4.every(c => c === top4[0])) {
-                        newCompleted[i] = true;
-                    }
-                }
-            }
-            return { bolts: newBolts, completed: newCompleted };
-        }
-
-        function isGoal(completed) {
-            return completed.every(v => v === true);
-        }
-
-        function heuristic(boltsState, completedState) {
-            let penalty = 0;
-            for (let i = 0; i < boltsState.length; i++) {
-                if (completedState[i]) continue;
-                const stack = boltsState[i];
-                if (stack.length === 0) continue;
-                let colorGroup = 0;
-                let currentColor = null;
-                for (let j = 0; j < stack.length; j++) {
-                    if (stack[j] !== currentColor) {
-                        colorGroup++;
-                        currentColor = stack[j];
-                    }
-                }
-                penalty += colorGroup;
-                const colorCounts = new Map();
-                for (let c of stack) colorCounts.set(c, (colorCounts.get(c) || 0) + 1);
-                for (let cnt of colorCounts.values()) {
-                    if (cnt >= 4) penalty -= 1;
-                }
-            }
-            return penalty;
-        }
-
-        function idaStarSolve(initialBolts, initialCompleted) {
-            const startKey = getStateKey(initialBolts, initialCompleted);
-            if (isGoal(initialCompleted)) return [];
-            
-            let bound = heuristic(initialBolts, initialCompleted);
-            const path = [];
-            const visited = new Map();
-            
-            function search(state, completed, g, prevMoveKey) {
-                const h = heuristic(state, completed);
-                const f = g + h;
-                if (f > bound) return f;
-                if (isGoal(completed)) return 'FOUND';
-                
-                const stateKey = getStateKey(state, completed);
-                if (visited.has(stateKey) && visited.get(stateKey) <= g) return Infinity;
-                visited.set(stateKey, g);
-                
-                let nextBound = Infinity;
-                const moves = getPossibleMoves(state, completed);
-                for (const move of moves) {
-                    const moveKey = `${move.src},${move.dst}`;
-                    if (prevMoveKey && moveKey === prevMoveKey && path.length > 0 && path[path.length-1].src === move.dst && path[path.length-1].dst === move.src) continue;
-                    
-                    const { bolts: newBolts, completed: newCompleted } = applyMove(state, completed, move);
-                    path.push(move);
-                    const result = search(newBolts, newCompleted, g + 1, moveKey);
-                    if (result === 'FOUND') return 'FOUND';
-                    if (typeof result === 'number' && result < nextBound) nextBound = result;
-                    path.pop();
-                }
-                visited.delete(stateKey);
-                return nextBound;
-            }
-            
-            while (true) {
-                visited.clear();
-                const t = search(initialBolts, initialCompleted, 0, null);
-                if (t === 'FOUND') return [...path];
-                if (t === Infinity) return null;
-                bound = t;
-                if (bound > 50) return null;
-            }
-        }
-
-        function findSolution(currentBolts, currentCompleted) {
-            const boltsCopy = currentBolts.map(arr => [...arr]);
-            const completedCopy = [...currentCompleted];
-            const solutionMovesRaw = idaStarSolve(boltsCopy, completedCopy);
-            if (!solutionMovesRaw) return null;
-            return solutionMovesRaw;
-        }
-
-        function solveGame() {
-            showMessage('Solving... This may take a moment.', 'info');
-            setTimeout(() => {
-                const boltsSnapshot = bolts.map(b => [...b]);
-                const completedSnapshot = [...boltCompleted];
-                const solution = findSolution(boltsSnapshot, completedSnapshot);
-                if (solution && solution.length > 0) {
-                    solutionMoves = solution;
-                    currentMoveIndex = 0;
-                    updateSolutionDisplay();
-                    showMessage(`Solution found! ${solutionMoves.length} moves. Click "Next Move" to execute.`, 'success');
-                } else {
-                    showMessage('No solution found! The level might be unsolvable.', 'error');
-                    solutionMoves = [];
-                    updateSolutionDisplay();
-                }
-            }, 50);
-        }
-
-        function stepSolution() {
-            if (solutionMoves.length === 0) {
-                showMessage('No solution loaded. Click "Solve" first.', 'error');
-                return;
-            }
-            
-            if (currentMoveIndex >= solutionMoves.length) {
-                showMessage('Solution complete!', 'success');
-                updateSolutionDisplay();
-                return;
-            }
-            
-            const move = solutionMoves[currentMoveIndex];
-            
-            if (makeMove(move.src, move.dst, true)) {
-                currentMoveIndex++;
-                updateSolutionDisplay();
-                if (currentMoveIndex >= solutionMoves.length) {
-                    showMessage('✅ Solution completed!', 'success');
-                }
-            } else {
-                showMessage('Error executing solution move!', 'error');
-                solutionMoves = [];
-                updateSolutionDisplay();
-            }
-        }
-
-        window.debug = {
-            getState: () => bolts.map(b => [...b]),
-            getCompleted: () => [...boltCompleted],
-            reset: () => resetGame(),
-            solve: () => solveGame()
-        };
-
-        window.addEventListener('DOMContentLoaded', function() {
-            const select = document.querySelector('#levelSelector');
-            for (let i = 1; i <= 100; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = i;
-                select.appendChild(option);
-            }
-        });
-
-        function fetchLevel(levelNumber) {
-            const textarea = document.getElementById('levelInput');
-            const select = document.querySelector('#levelSelector');
-            fetch(`data/Level${levelNumber}.txt`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Level ${levelNumber} not found`);
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    textarea.value = data;
-                    select.selectedIndex = levelNumber-1;
-                    loadLevel();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    textarea.value = `Error: Could not load Level ${levelNumber}.txt\n\nMake sure the file exists at: data/Level${levelNumber}.txt`;
-                });
-        }
-
-        function select_level() {
-            const select = document.querySelector('#levelSelector');
-            const levelNumber = select.value;
-            location.hash = levelNumber;
-            fetchLevel(levelNumber);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            let levelNumber = location.hash ? parseInt(location.hash.slice(1)) : 1;
-            fetchLevel(levelNumber);
-        });
-    </script>
-
-    <script src="solver.js"></script>
-
-    <a href="https://github.com/joric/bolts-and-nuts/" target="_blank" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
 </body>
 </html>
