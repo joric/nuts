@@ -58,7 +58,7 @@
         }
 
         .bolt {
-            background: linear-gradient(to bottom, #888, #999);
+            background: linear-gradient(to bottom, #aaa, #999);
             width: 80px;
             min-height: 220px;
             border-radius: 15px 15px 5px 5px;
@@ -237,15 +237,15 @@
             resize: vertical;
         }
 
-        .color-blue { background: #3498db; }
-        .color-red { background: #e74c3c; }
-        .color-orange { background: #e67e22; }
-        .color-green { background: #2ecc71; }
+        .color-blue { background: deepskyblue; }
+        .color-red { background: orangered; }
+        .color-orange { background: orange; }
+        .color-green { background: seagreen; }
         .color-yellow { background: #f1c40f; }
         .color-purple { background: #9b59b6; }
         .color-pink { background: #e84393; }
         .color-brown { background: #8B4513; }
-        .color-lime { background: #32cd32; }
+        .color-lime { background: yellowgreen; }
         .color-l_blue { background: #87ceeb; }
         .color-l_red { background: #ff6b6b; }
         .color-l_green { background: #98fb98; }
@@ -280,7 +280,7 @@
 
         <div class="level-input">
             <select id="levelSelector" onchange="select_level()">
-                <option>Select Level</option>
+                <option value="1">Select Level</option>
             </select>
             <br/><br/>
             <textarea id="levelInput" rows="5" cols="50">5
@@ -305,6 +305,17 @@ red,orange,blue,red</textarea><br>
         let moveLog = [];
         let numBolts = 0;
 
+        // --- Configs for Programmer ---
+        // Remap colors (e.g., {"blue": "orange", "orange": "blue"})
+        const colorRemap = {};
+        //const colorRemap = {};//{"orange": "lime", "red": "blue", "blue": "orange"}; //level1
+        //const colorRemap = {"l_green": "orange", "orange": "lime", "l_red":"red", "red": "green"};
+        
+        // Remap bolt positions 0-indexed (e.g., {0: 1, 1: 0})
+        const boltRemap = {}; 
+        //const boltRemap = {0:6, 6:0}; 
+        // ------------------------------
+
         const colorMap = {
             'blue': 'color-blue',
             'red': 'color-red',
@@ -326,10 +337,13 @@ red,orange,blue,red</textarea><br>
             if (lines.length === 0) return null;
             
             const num = parseInt(lines[0]);
-            const stacks = [];
+            let stacks = [];
             
             for (let i = 1; i < lines.length; i++) {
-                const colors = lines[i].split(',').map(c => c.trim());
+                const colors = lines[i].split(',').map(c => {
+                    const trimmed = c.trim();
+                    return colorRemap[trimmed] || trimmed;
+                });
                 stacks.push(colors);
             }
             
@@ -338,6 +352,17 @@ red,orange,blue,red</textarea><br>
                 stacks.push([]);
             }
             
+            if (Object.keys(boltRemap).length > 0) {
+                const remappedStacks = new Array(num).fill().map(() => []);
+                for (let i = 0; i < num; i++) {
+                    const targetIdx = boltRemap[i] !== undefined ? boltRemap[i] : i;
+                    if (targetIdx < num) {
+                        remappedStacks[targetIdx] = stacks[i];
+                    }
+                }
+                stacks = remappedStacks;
+            }
+
             return { numBolts: num, stacks: stacks };
         }
 
@@ -624,7 +649,6 @@ red,orange,blue,red</textarea><br>
         function fetchLevel(levelNumber) {
             const textarea = document.getElementById('levelInput');
             const select = document.querySelector('#levelSelector');
-
             fetch(`data/Level${levelNumber}.txt`)
                 .then(response => {
                     if (!response.ok) {
@@ -646,11 +670,13 @@ red,orange,blue,red</textarea><br>
         function select_level() {
             const select = document.querySelector('#levelSelector');
             const levelNumber = select.value;
+            location.hash = levelNumber;
             fetchLevel(levelNumber);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            fetchLevel(1);
+            let levelNumber = location.hash ? parseInt(location.hash.slice(1)) : 1;
+            fetchLevel(levelNumber);
         });
     </script>
 
