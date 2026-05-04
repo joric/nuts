@@ -58,7 +58,7 @@
         }
 
         .bolt {
-            background: linear-gradient(to bottom, #8B4513, #654321);
+            background: linear-gradient(to bottom, #888, #999);
             width: 60px;
             min-height: 180px;
             border-radius: 15px 15px 5px 5px;
@@ -76,19 +76,6 @@
         .bolt.selected {
             transform: scale(1.05);
             box-shadow: 0 0 0 3px #ffd700, 0 5px 20px rgba(0,0,0,0.3);
-        }
-
-        .bolt::before {
-            content: '';
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 20px;
-            background: #999;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         .nut {
