@@ -15,8 +15,6 @@
   justify-content: center;
   gap: 30px;
   flex-wrap: wrap;
-  margin-bottom: 30px;
-  padding: 20px;
   background: #f0f0f0;
   border-radius: 15px;
   align-items: flex-end;
@@ -110,10 +108,10 @@
     <div id="message">Click on a bolt to select it, then click on another bolt to move the top nut</div>
   </div>
 
-  <div class="game-area d-flex flex-wrap align-items-end bg-light p-4 rounded" id="gameArea">
+  <div class="game-area d-flex flex-wrap align-items-end bg-light p-2 rounded" id="gameArea">
   </div>
 
-  <div class="controls text-center p-1">
+  <div class="controls text-center p-3">
     <button class="reset-btn btn btn-danger" onclick="resetGame()">Reset</button>
     <button class="solve-btn btn btn-success" onclick="solveGame(); document.querySelector('#nav-home-tab').click();">Solve</button>
     <button class="step-btn  btn btn-primary" onclick="stepSolution()">Next Move</button>
