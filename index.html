@@ -302,6 +302,13 @@
             font-weight: normal;
             margin-left: 10px;
         }
+
+        .level-selector {
+            width: 100%;
+            text-align: center;
+            padding-bottom: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -310,6 +317,12 @@
         <div class="description">
             Move nuts from top of bolts. Can only place on matching color or empty bolt.<br>
             Max 4 nuts per bolt. When 4 matching colors stack, bolt is completed!
+        </div>
+
+        <div class="level-selector">
+            Select Level: 
+            <select id="levelSelector" onchange="select_level()">
+            </select>
         </div>
 
         <div class="game-area" id="gameArea"></div>
@@ -329,15 +342,11 @@
         <div id="message" class="message info">Click on a bolt to select it, then click on another bolt to move the top nut</div>
 
         <div class="level-input">
-            <select id="levelSelector" onchange="select_level()">
-                <option value="1">Select Level</option>
-            </select>
-            <br/><br/>
             <textarea id="levelInput" rows="5" cols="50">5
 blue,red,orange,blue
 blue,red,orange,orange
 red,orange,blue,red</textarea><br>
-            <button onclick="loadLevel()">Load Level</button>
+            <button onclick="loadLevel()">Load Level from Text</button>
         </div>
         
         <div class="moves-list">
