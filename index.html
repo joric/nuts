@@ -875,7 +875,7 @@ red,orange,blue,red</textarea><br>
                 })
                 .then(data => {
                     textarea.value = data;
-                    select.selectedIndex = levelNumber;
+                    select.selectedIndex = levelNumber-1;
                     loadLevel();
                 })
                 .catch(error => {
