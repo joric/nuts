@@ -256,7 +256,7 @@ function renderGame() {
 
 function handleBoltClick(boltIndex) {
   if (solutionMoves.length > 0 && currentMoveIndex < solutionMoves.length) {
-    showMessage('Auto-solver is active. Press Reset to play manually.', 'error');
+    showMessage('Auto-solver is active. Press Next Move or Reset to play manually.', 'error');
     return;
   }
   
