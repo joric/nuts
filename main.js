@@ -30,7 +30,21 @@ const colorMap = {
   'l_blue': 'color-l_blue',
   'l_red': 'color-l_red',
   'l_green': 'color-l_green',
-  'silver': 'color-silver'
+  'silver': 'color-silver',
+
+  'b': 'color-blue',
+  'r': 'color-red',
+  'o': 'color-orange',
+  'g': 'color-green',
+  'y': 'color-yellow',
+  'p': 'color-purple',
+  'p': 'color-pink',
+  'b': 'color-brown',
+  'l': 'color-lime',
+  'l_b': 'color-l_blue',
+  'l_r': 'color-l_red',
+  'l_g': 'color-l_green',
+  's': 'color-silver',
 };
 
 // Helper to update solution display panel
