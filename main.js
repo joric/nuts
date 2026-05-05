@@ -6,6 +6,9 @@ let currentMoveIndex = 0;
 let moveLog = [];
 let numBolts = 0;
 
+let undoStack = [];
+let redoStack = [];
+
 // --- Configs for Programmer ---
 // Remap colors (e.g., {"blue": "orange", "orange": "blue"})
 const colorRemap = {};
@@ -46,6 +49,50 @@ const colorMap = {
   'l_g': 'color-l_green',
   's': 'color-silver',
 };
+
+// --- Undo / Redo Logic ---
+function saveState() {
+  return {
+    bolts: bolts.map(b => [...b]),
+    boltCompleted: [...boltCompleted],
+    selectedBolt: selectedBolt,
+    solutionMoves: solutionMoves.map(m => ({...m})),
+    currentMoveIndex: currentMoveIndex,
+    moveLog: [...moveLog]
+  };
+}
+
+function restoreState(state) {
+  bolts = state.bolts.map(b => [...b]);
+  boltCompleted = [...state.boltCompleted];
+  selectedBolt = state.selectedBolt;
+  solutionMoves = state.solutionMoves.map(m => ({...m}));
+  currentMoveIndex = state.currentMoveIndex;
+  moveLog = [...state.moveLog];
+  
+  updateMovesLog();
+  updateSolutionDisplay();
+  renderGame();
+}
+
+function undo() {
+  if (undoStack.length === 0) return;
+  redoStack.push(saveState());
+  restoreState(undoStack.pop());
+}
+
+function redo() {
+  if (redoStack.length === 0) return;
+  undoStack.push(saveState());
+  restoreState(redoStack.pop());
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'z' || e.key === 'Z') undo();
+  if (e.key === 'x' || e.key === 'X') redo();
+});
+// -------------------------
 
 // Helper to update solution display panel
 function updateSolutionDisplay() {
@@ -145,11 +192,14 @@ function canMove(src, dst) {
 function makeMove(src, dst, record = true) {
   if (!canMove(src, dst)) return false;
   
+  undoStack.push(saveState());
+  redoStack = [];
+  
   const nut = bolts[src].shift();
   bolts[dst].unshift(nut);
   
   if (record) {
-    addMoveToLog(`${src + 1} → ${dst + 1} (${nut})`);
+    addMoveToLog(`${src + 1} -> ${dst + 1} (${nut})`);
   }
   
   renderGame();
@@ -193,7 +243,7 @@ function showMessage(msg, type) {
   setTimeout(() => {
     if (document.getElementById('message').textContent === msg) {
       messageDiv.className = 'message info';
-      let solved = checWinCondition();
+      let solved = checkWinCondition();
       messageDiv.textContent = solved ? 'Solved!' : 'Click on a bolt to select it, then click on another bolt to move the top nut';
     }
   }, 3000);
@@ -297,6 +347,8 @@ function resetGame() {
     solutionMoves = [];
     currentMoveIndex = 0;
     moveLog = [];
+    undoStack = [];
+    redoStack = [];
     updateMovesLog();
     renderGame();
     showMessage('Game reset!', 'info');
@@ -322,6 +374,8 @@ function loadLevel() {
   solutionMoves = [];
   currentMoveIndex = 0;
   moveLog = [];
+  undoStack = [];
+  redoStack = [];
   updateMovesLog();
   renderGame();
   showMessage('Level loaded! Click on bolts to play.', 'info');
@@ -406,65 +460,12 @@ function heuristic(boltsState, completedState) {
   return penalty;
 }
 
-function idaStarSolve(initialBolts, initialCompleted) {
-  const startKey = getStateKey(initialBolts, initialCompleted);
-  if (isGoal(initialCompleted)) return [];
-  
-  let bound = heuristic(initialBolts, initialCompleted);
-  const path = [];
-  const visited = new Map();
-  
-  function search(state, completed, g, prevMoveKey) {
-    const h = heuristic(state, completed);
-    const f = g + h;
-    if (f > bound) return f;
-    if (isGoal(completed)) return 'FOUND';
-    
-    const stateKey = getStateKey(state, completed);
-    if (visited.has(stateKey) && visited.get(stateKey) <= g) return Infinity;
-    visited.set(stateKey, g);
-    
-    let nextBound = Infinity;
-    const moves = getPossibleMoves(state, completed);
-    for (const move of moves) {
-      const moveKey = `${move.src},${move.dst}`;
-      if (prevMoveKey && moveKey === prevMoveKey && path.length > 0 && path[path.length-1].src === move.dst && path[path.length-1].dst === move.src) continue;
-      
-      const { bolts: newBolts, completed: newCompleted } = applyMove(state, completed, move);
-      path.push(move);
-      const result = search(newBolts, newCompleted, g + 1, moveKey);
-      if (result === 'FOUND') return 'FOUND';
-      if (typeof result === 'number' && result < nextBound) nextBound = result;
-      path.pop();
-    }
-    visited.delete(stateKey);
-    return nextBound;
-  }
-  
-  while (true) {
-    visited.clear();
-    const t = search(initialBolts, initialCompleted, 0, null);
-    if (t === 'FOUND') return [...path];
-    if (t === Infinity) return null;
-    bound = t;
-    if (bound > 50) return null;
-  }
-}
-
-function findSolution(currentBolts, currentCompleted) {
-  const boltsCopy = currentBolts.map(arr => [...arr]);
-  const completedCopy = [...currentCompleted];
-  const solutionMovesRaw = idaStarSolve(boltsCopy, completedCopy);
-  if (!solutionMovesRaw) return null;
-  return solutionMovesRaw;
-}
-
 function solveGame() {
   showMessage('Solving... This may take a moment.', 'info');
   setTimeout(() => {
     const boltsSnapshot = bolts.map(b => [...b]);
     const completedSnapshot = [...boltCompleted];
-    const solution = findSolution(boltsSnapshot, completedSnapshot);
+    const solution = findSolution(boltsSnapshot, completedSnapshot); // defined in solver.js
     if (solution && solution.length > 0) {
       solutionMoves = solution;
       currentMoveIndex = 0;
@@ -554,4 +555,3 @@ document.addEventListener('DOMContentLoaded', function() {
   let levelNumber = location.hash ? parseInt(location.hash.slice(1)) : 1;
   fetchLevel(levelNumber);
 });
-

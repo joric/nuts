@@ -42,7 +42,7 @@
   border-bottom: 3px solid #5d6e8a;
   justify-content: flex-end;
   position: relative;
-  margin: 5px;
+  margin: 20px 20px 5px 5px;
 }
 
 .bolt::before {
@@ -134,7 +134,9 @@
   <div class="controls text-center p-3">
     <button class="reset-btn btn btn-danger" onclick="resetGame()">Reset</button>
     <button class="solve-btn btn btn-success" onclick="solveGame(); document.querySelector('#nav-home-tab').click();">Solve</button>
-    <button class="step-btn  btn btn-primary" onclick="stepSolution()">Next Move</button>
+    <button class="step-btn  btn btn-primary" onclick="stepSolution()">Next</button>
+    <button class="undo-btn  btn btn-secondary" onclick="undo()">Undo</button>
+    <button class="redo-btn  btn btn-secondary" onclick="redo()">Redo</button>
   </div>
 
 
