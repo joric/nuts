@@ -42,7 +42,8 @@
   border-bottom: 3px solid #5d6e8a;
   justify-content: flex-end;
   position: relative;
-  margin: 20px 20px 5px 5px;
+  margin: 5px 8px 5px 8px;
+  overflow: visible;
 }
 
 .bolt::before {
@@ -59,13 +60,12 @@
   z-index: 1;
 }
 
-.bolt.selected {
-  box-shadow: 0 0 0 3px orange;
+.nut.selected {
+  outline: 3px solid rgba(0,0,0,0.75);
 }
 
 .bolt.completed {
-  box-shadow: 0 0 0 2px #2ecc71;
-  opacity: 0.5;
+  opacity: 0.75;
 }
 
 .bolt.completed::after {

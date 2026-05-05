@@ -259,9 +259,12 @@ function renderGame() {
     
     const bolt = document.createElement('div');
     bolt.className = 'bolt';
-    if (selectedBolt === i) {
-      bolt.classList.add('selected');
-    }
+    
+    // REMOVED: bolt is no longer marked as selected
+    // if (selectedBolt === i) {
+    //   bolt.classList.add('selected');
+    // }
+    
     if (boltCompleted[i]) {
       bolt.classList.add('completed');
     }
@@ -277,6 +280,12 @@ function renderGame() {
       const nut = document.createElement('div');
       const color = bolts[i][j];
       nut.className = `nut ${colorMap[color] || 'color-blue'}`;
+      
+      // ADDED: The top nut (index 0) of the selected bolt gets the 'selected' visual class
+      if (selectedBolt === i && j === 0) {
+        nut.classList.add('selected');
+      }
+
       nut.textContent = color;
       nutContainer.appendChild(nut);
     }
@@ -381,83 +390,6 @@ function loadLevel() {
   showMessage('Level loaded! Click on bolts to play.', 'info');
   checkAndMarkCompletedBolts();
   updateSolutionDisplay();
-}
-
-// ----- BFS / IDA* solver (complete, finds optimal moves) -----
-function getStateKey(boltsState, completedState) {
-  let key = completedState.map(v => v ? '1' : '0').join('') + '|';
-  for (let i = 0; i < boltsState.length; i++) {
-    key += boltsState[i].join(',') + ';';
-  }
-  return key;
-}
-
-function getPossibleMoves(boltsState, completedState) {
-  const moves = [];
-  const n = boltsState.length;
-  for (let src = 0; src < n; src++) {
-    if (completedState[src]) continue;
-    if (boltsState[src].length === 0) continue;
-    for (let dst = 0; dst < n; dst++) {
-      if (src === dst) continue;
-      if (completedState[dst]) continue;
-      if (boltsState[dst].length >= 4) continue;
-      const srcTop = boltsState[src][0];
-      if (boltsState[dst].length === 0) {
-        moves.push({ src, dst });
-      } else {
-        const dstTop = boltsState[dst][0];
-        if (srcTop === dstTop) {
-          moves.push({ src, dst });
-        }
-      }
-    }
-  }
-  return moves;
-}
-
-function applyMove(state, completed, move) {
-  const newBolts = state.map(bolt => [...bolt]);
-  const newCompleted = [...completed];
-  const nut = newBolts[move.src].shift();
-  newBolts[move.dst].unshift(nut);
-  for (let i = 0; i < newBolts.length; i++) {
-    if (!newCompleted[i] && newBolts[i].length >= 4) {
-      const top4 = newBolts[i].slice(0, 4);
-      if (top4.every(c => c === top4[0])) {
-        newCompleted[i] = true;
-      }
-    }
-  }
-  return { bolts: newBolts, completed: newCompleted };
-}
-
-function isGoal(completed) {
-  return completed.every(v => v === true);
-}
-
-function heuristic(boltsState, completedState) {
-  let penalty = 0;
-  for (let i = 0; i < boltsState.length; i++) {
-    if (completedState[i]) continue;
-    const stack = boltsState[i];
-    if (stack.length === 0) continue;
-    let colorGroup = 0;
-    let currentColor = null;
-    for (let j = 0; j < stack.length; j++) {
-      if (stack[j] !== currentColor) {
-        colorGroup++;
-        currentColor = stack[j];
-      }
-    }
-    penalty += colorGroup;
-    const colorCounts = new Map();
-    for (let c of stack) colorCounts.set(c, (colorCounts.get(c) || 0) + 1);
-    for (let cnt of colorCounts.values()) {
-      if (cnt >= 4) penalty -= 1;
-    }
-  }
-  return penalty;
 }
 
 function solveGame() {
