@@ -267,11 +267,6 @@ function renderGame() {
     const bolt = document.createElement('div');
     bolt.className = 'bolt';
     
-    // REMOVED: bolt is no longer marked as selected
-    // if (selectedBolt === i) {
-    //   bolt.classList.add('selected');
-    // }
-    
     if (boltCompleted[i]) {
       bolt.classList.add('completed');
     }
@@ -288,7 +283,6 @@ function renderGame() {
       const color = bolts[i][j];
       nut.className = `nut ${colorMap[color] || 'color-blue'}`;
       
-      // ADDED: The top nut (index 0) of the selected bolt gets the 'selected' visual class
       if (selectedBolt === i && j === 0) {
         nut.classList.add('selected');
       }
@@ -301,7 +295,6 @@ function renderGame() {
     
     const header = document.createElement('div');
     header.className = 'bolt-header';
-    //header.innerHTML = `<span class="bolt-number">Bolt ${i + 1}</span><br>${bolts[i].length}/4`;
     header.innerHTML = `<span class="bolt-number">${i + 1}</span>`;
     
     boltContainer.appendChild(bolt);
@@ -342,13 +335,26 @@ function handleBoltClick(boltIndex) {
       showMessage('Cannot select empty bolt!', 'error');
     }
   } else {
+    // If they click the same bolt again, do not unselect it. Just return.
+    if (selectedBolt === boltIndex) {
+      return;
+    }
+
     if (makeMove(selectedBolt, boltIndex, true)) {
       selectedBolt = null;
       renderGame();
     } else {
-      showMessage('Invalid move! Check color match and bolt capacity.', 'error');
-      selectedBolt = null;
-      renderGame();
+      // Instead of throwing an error for an invalid move, just select the new bolt
+      if (bolts[boltIndex].length > 0) {
+        selectedBolt = boltIndex;
+        renderGame();
+        const topNut = bolts[boltIndex][0];
+        showMessage(`Selected bolt ${boltIndex + 1} (top nut: ${topNut})`, 'info');
+      } else {
+        showMessage('Invalid move! Check color match and bolt capacity.', 'error');
+        selectedBolt = null;
+        renderGame();
+      }
     }
   }
 }
