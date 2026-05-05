@@ -91,6 +91,9 @@ document.addEventListener('keydown', function(e) {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   if (e.key === 'z' || e.key === 'Z') undo();
   if (e.key === 'x' || e.key === 'X') redo();
+  if (e.key === 'r' || e.key === 'R') resetGame();
+  if (e.key === 'n' || e.key === 'N') stepSolution();
+  if (e.key === 'e' || e.key === 'E') solveGame();
 });
 // -------------------------
 
