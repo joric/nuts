@@ -227,9 +227,16 @@ function updateMovesLog() {
   }
 }
 
-function checkWinCondition() {
+function checkSolved() {
   const allCompleted = bolts.every((_, i) => boltCompleted[i] || bolts[i].length === 0);
   if (allCompleted && bolts.some((_, i) => boltCompleted[i])) {
+    return true;
+  }
+  return false;
+}
+
+function checkWinCondition() {
+  if (checkSolved()) {
     showMessage('Solved! You can Reset the game or Select Level to continue', 'success');
     return true;
   }
@@ -393,6 +400,10 @@ function loadLevel() {
 }
 
 function solveGame() {
+  if (checkSolved()) {
+    showMessage('Already solved!', 'info');
+    return
+  }
   showMessage('Solving... This may take a moment.', 'info');
   setTimeout(() => {
     const boltsSnapshot = bolts.map(b => [...b]);
