@@ -152,10 +152,10 @@
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
       <button class="nav-link active" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="true">Select Level</button>
       <button class="nav-link" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="false">Solution</button>
+      <button class="nav-link" id="nav-remap-tab" data-bs-toggle="tab" data-bs-target="#nav-remap" type="button" role="tab" aria-controls="nav-remap" aria-selected="false">Display</button>
       <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Moves Log</button>
     </div>
   </nav>
-
 
   <div class="tab-content" id="nav-tabContent">
 
@@ -187,12 +187,42 @@
               </div>
           </div>
       </div>
+
     </div>
 
     <div class="tab-pane fade p-3" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
       <div id="solutionDiv" class="solution-panel">
         <div id="solutionContent" class="solution-content solution-empty">Click "Solve" to generate optimal moves. Then use "Next Move".</div>
       </div>
+    </div>
+
+    <div class="tab-pane fade p-3" id="nav-remap" role="tabpanel" aria-labelledby="nav-remap-tab">
+
+      <div class="container">
+          <div class="row g-3 align-items-start">
+              <div class="col-md-3">
+                  <label class="form-label fw-bold">Color Shift</label>
+              </div>
+              <div class="col-md-9">
+                <label id="rangeValue1" for="customRange1" class="form-label">0</label>
+                <input type="range" class="form-range" min="-16" max="16" step="1" id="customRange1" oninput="updateOptions({name:'colorShift',value:this.value,label:'rangeValue1'})">
+              </div>
+          </div>
+
+          <div class="row g-3 mt-2 align-items-start">
+              <div class="col-md-3">
+                  <label class="form-label fw-bold">Bolt Shift</label>
+              </div>
+              <div class="col-md-9">
+                <label id="rangeValue2" for="customRange2" class="form-label">0</label>
+                <input type="range" class="form-range" min="-16" max="16" step="1" id="customRange2" oninput="updateOptions({name:'boltShift',value:this.value,label:'rangeValue2'})">
+              </div>
+          </div>
+
+          <script>  document.querySelector('#nav-remap-tab').click();</script>
+      </div>
+
+
     </div>
 
     <div class="tab-pane fade p-3" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">

@@ -9,16 +9,11 @@ let numBolts = 0;
 let undoStack = [];
 let redoStack = [];
 
-// --- Configs for Programmer ---
-// Remap colors (e.g., {"blue": "orange", "orange": "blue"})
-const colorRemap = {};
-//const colorRemap = {};//{"orange": "lime", "red": "blue", "blue": "orange"}; //level1
-//const colorRemap = {"l_green": "orange", "orange": "lime", "l_red":"red", "red": "green"};
+let colorShift = 0;
+let boltShift = 0;
 
-// Remap bolt positions 0-indexed (e.g., {0: 1, 1: 0})
-const boltRemap = {}; 
-//const boltRemap = {0:6, 6:0}; 
-// ------------------------------
+let colorRemap = {};
+let boltRemap = {};
 
 const colorMap = {
   'blue': 'color-blue',
@@ -34,21 +29,26 @@ const colorMap = {
   'l_red': 'color-l_red',
   'l_green': 'color-l_green',
   'silver': 'color-silver',
-
-  'b': 'color-blue',
-  'r': 'color-red',
-  'o': 'color-orange',
-  'g': 'color-green',
-  'y': 'color-yellow',
-  'p': 'color-purple',
-  'p': 'color-pink',
-  'b': 'color-brown',
-  'l': 'color-lime',
-  'l_b': 'color-l_blue',
-  'l_r': 'color-l_red',
-  'l_g': 'color-l_green',
-  's': 'color-silver',
 };
+
+const colorAliases = {
+  'b': 'blue',
+  'r': 'red',
+  'o': 'orange',
+  'g': 'green',
+  'y': 'yellow',
+  'p': 'purple',
+  'p': 'pink',
+  'br': 'brown',
+  'l': 'lime',
+  'l_b': 'l_blue',
+  'l_r': 'l_red',
+  'l_g': 'l_green',
+  'lb': 'l_blue',
+  'lr': 'l_red',
+  'lg': 'l_green',
+  's': 'silver',
+}
 
 // --- Undo / Redo Logic ---
 function saveState() {
@@ -132,7 +132,7 @@ function parseLevel(levelText) {
   for (let i = 1; i < lines.length; i++) {
     const colors = lines[i].split(',').map(c => {
       const trimmed = c.trim();
-      return colorRemap[trimmed] || trimmed;
+      return colorAliases[trimmed] || trimmed;
     });
     stacks.push(colors);
   }
@@ -140,17 +140,6 @@ function parseLevel(levelText) {
   const emptyBolts = num - stacks.length;
   for (let i = 0; i < emptyBolts; i++) {
     stacks.push([]);
-  }
-  
-  if (Object.keys(boltRemap).length > 0) {
-    const remappedStacks = new Array(num).fill().map(() => []);
-    for (let i = 0; i < num; i++) {
-      const targetIdx = boltRemap[i] !== undefined ? boltRemap[i] : i;
-      if (targetIdx < num) {
-        remappedStacks[targetIdx] = stacks[i];
-      }
-    }
-    stacks = remappedStacks;
   }
 
   return { numBolts: num, stacks: stacks };
@@ -259,17 +248,56 @@ function showMessage(msg, type) {
   }, 3000);
 }
 
+function updateVar(name, options) {
+  if (options?.name==name) {
+    let value = parseInt(options.value);
+    document.getElementById(options.label).innerHTML = value;
+    return value;
+  }
+}
+
+function updateOptions(options) {
+  colorShift = updateVar('colorShift', options) ?? colorShift;
+  boltShift = updateVar('boltShift', options) ?? boltShift;
+  renderGame();
+}
+
 function renderGame() {
+  //const colors = [...new Set(bolts.flat())];
+  const colors = Object.keys(colorMap);
+
+  colorRemap = {};
+  if (colorShift) {
+    for (let i = 0; i < colors.length; i++) {
+      let j = ((i + colorShift) % colors.length + colors.length) % colors.length;
+      colorRemap[colors[i]] = colors[j];
+    }
+  }
+
+  boltRemap = {};
+  if (boltShift) {
+    for (let i = 0; i < bolts.length; i++) {
+      let j = ((i + boltShift) % bolts.length + bolts.length) % bolts.length;
+      boltRemap[i] = j;
+    }
+  }
+
+  //console.log(colorShift, boltShift, colorRemap, boltRemap);
+
   const gameArea = document.getElementById('gameArea');
   gameArea.innerHTML = '';
-  
-  for (let i = 0; i < bolts.length; i++) {
+
+  for (let k = 0; k < bolts.length; k++) {
+    let i = boltRemap[k] ?? k;
+
+    //console.log('drawing bolt', i, 'was', k);
+
     const boltContainer = document.createElement('div');
     boltContainer.className = 'bolt-container';
     
     const bolt = document.createElement('div');
     bolt.className = 'bolt';
-    
+
     if (boltCompleted[i]) {
       bolt.classList.add('completed');
     }
@@ -284,13 +312,14 @@ function renderGame() {
     for (let j = 0; j < bolts[i].length; j++) {
       const nut = document.createElement('div');
       const color = bolts[i][j];
-      nut.className = `nut ${colorMap[color] || 'color-blue'}`;
+      const displayColor = colorRemap[color]||color;
+      nut.className = `nut ${colorMap[displayColor] || 'color-blue'}`;
       
       if (selectedBolt === i && j === 0) {
         nut.classList.add('selected');
       }
 
-      nut.textContent = color;
+      nut.textContent = displayColor;
       nutContainer.appendChild(nut);
     }
     
