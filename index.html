@@ -28,8 +28,8 @@
 }
 
 .bolt {
-  background: linear-gradient(145deg, #b0b7c6, #8f9bb3);
-  width: 45px;  /* Reduced from 75px - this is the stem width */
+  background: linear-gradient(90deg, #9aa3b8, #cbd2e0 30%, #b0b9cc 50%, #7f8aa4 85%, #9aa3b8);
+  width: 45px;
   height: 190px;
   border-radius: 8px 8px 12px 12px;
   display: flex;
@@ -45,16 +45,15 @@
   margin: 5px;
 }
 
-/* Thick bolt base */
 .bolt::before {
   content: '';
   position: absolute;
   bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 75px;  /* Wider base */
+  width: 75px;
   height: 30px;
-  background: linear-gradient(145deg, #8f9bb3, #7a879f);
+  background: linear-gradient(90deg, #9aa3b8, #cbd2e0 30%, #b0b9cc 50%, #7f8aa4 85%, #9aa3b8);
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   z-index: 1;
