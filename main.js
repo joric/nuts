@@ -180,7 +180,7 @@ function updateMovesLog() {
 function checkWinCondition() {
   const allCompleted = bolts.every((_, i) => boltCompleted[i] || bolts[i].length === 0);
   if (allCompleted && bolts.some((_, i) => boltCompleted[i])) {
-    showMessage('Congratulations! All bolts completed!', 'success');
+    showMessage('Solved! You can Reset the game or Select Level to continue', 'success');
     return true;
   }
   return false;
@@ -193,7 +193,8 @@ function showMessage(msg, type) {
   setTimeout(() => {
     if (document.getElementById('message').textContent === msg) {
       messageDiv.className = 'message info';
-      messageDiv.textContent = 'Click on a bolt to select it, then click on another bolt to move the top nut';
+      let solved = checWinCondition();
+      messageDiv.textContent = solved ? 'Solved!' : 'Click on a bolt to select it, then click on another bolt to move the top nut';
     }
   }, 3000);
 }
