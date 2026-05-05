@@ -20,6 +20,7 @@
   align-items: flex-end;
 }
 
+
 .bolt-container {
   display: flex;
   flex-direction: column;
@@ -29,9 +30,9 @@
 
 .bolt {
   background: linear-gradient(145deg, #b0b7c6, #8f9bb3);
-  width: 75px;
-  min-height: 200px;
-  border-radius: 24px 24px 12px 12px;
+  width: 45px;  /* Reduced from 75px - this is the stem width */
+  min-height: 190px;
+  border-radius: 8px 8px 12px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -41,18 +42,36 @@
   box-shadow: 0 8px 14px rgba(0,0,0,0.2);
   border-bottom: 3px solid #5d6e8a;
   justify-content: flex-end;
+  position: relative;
+  margin: 5px;
 }
 
+/* Thick bolt base */
+.bolt::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 75px;  /* Wider base */
+  height: 20px;
+  background: linear-gradient(145deg, #8f9bb3, #7a879f);
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 1;
+}
 
 .bolt.selected {
   box-shadow: 0 0 0 3px #ffc107, 0 8px 18px black;
   background: linear-gradient(145deg, #c0c9dc, #9aa7c2);
 }
+
 .bolt.completed {
   background: linear-gradient(145deg, #999, #888);
   box-shadow: 0 0 0 2px #2ecc71;
   position: relative;
 }
+
 .bolt.completed::after {
   content: "✓";
   position: absolute;
@@ -64,12 +83,19 @@
   left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
+  z-index: 2;
 }
+
+/* Override the bolt.completed::after for the base pseudo-element */
+.bolt.completed::before {
+  z-index: 1;
+}
+
 .nut {
-  width: 52px;
+  width: 65px;  /* Wider than bolt stem (45px) to overlay */
   height: 32px;
   margin: 4px 0;
-  border-radius: 20px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,6 +105,9 @@
   color: white;
   text-shadow: 0 1px 1px rgba(0,0,0,0.2);
   box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.2);
+  background: linear-gradient(145deg, #cdb38c, #b8956a);
+  position: relative;
+  z-index: 2;
 }
 
 .color-blue { background: deepskyblue; }
@@ -104,7 +133,7 @@
 <div class="container p-3">
   <h1 class="text-center">Bolts and Nuts</h1>
 
-  <div class="text-center p-1">
+  <div class="text-center pb-3">
     <div id="message">Click on a bolt to select it, then click on another bolt to move the top nut</div>
   </div>
 
@@ -131,7 +160,7 @@
 
     <div class="tab-pane fade show active p-3" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
 
-      <div class="container p-3">
+      <div class="container">
           <div class="row g-3 align-items-start">
               <div class="col-md-3">
                   <label class="form-label fw-bold">Level Number</label>
