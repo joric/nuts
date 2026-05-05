@@ -1,6 +1,6 @@
-# Bolts and Nuts
+# Nuts and Bolts
 
-Bolts and Nuts game (with a solver)
+Nuts and Bolts game (with a solver)
 
-* Live demo: https://joric.github.io/bolts-and-nuts
+* Live demo: https://joric.github.io/nuts-and-bolts
 
