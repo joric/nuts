@@ -88,9 +88,9 @@ document.addEventListener('keydown', function(e) {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   if (e.key === 'z' || e.key === 'Z') undo();
   if (e.key === 'x' || e.key === 'X') redo();
-  if (e.key === 'r' || e.key === 'R') resetGame();
-  if (e.key === 'n' || e.key === 'N') stepSolution();
-  if (e.key === 'e' || e.key === 'E') solveGame();
+  if (e.key === 'r' || e.key === 'R') reset();
+  if (e.key === 'n' || e.key === 'N') nest();
+  if (e.key === 'e' || e.key === 'E') solve();
 });
 // -------------------------
 
@@ -236,16 +236,6 @@ function showMessage(msg, type) {
   }
 }
 
-function showToast(message, title = 'Notification', duration = 2000) {
-  const toastEl = document.getElementById('tempToast');
-  toastEl.querySelector('.toast-body').textContent = message;
-  const toast = new bootstrap.Toast(toastEl, {
-    autohide: true,
-    delay: duration
-  });
-  toast.show();
-}
-
 function updateVar(name, options) {
   if (options?.name==name) {
     let value = parseInt(options.value);
@@ -387,7 +377,7 @@ function handleBoltClick(boltIndex) {
   }
 }
 
-function resetGame() {
+function reset() {
   const levelText = document.getElementById('levelInput').value;
   const parsed = parseLevel(levelText);
   if (parsed) {
@@ -431,7 +421,7 @@ function loadLevel() {
   updateSolutionDisplay();
 }
 
-function solveGame() {
+function solve() {
   if (checkSolved()) {
     showMessage('Already solved!', 'info');
     return;
@@ -454,10 +444,21 @@ function solveGame() {
   }, 50);
 }
 
-function stepSolution() {
+function nextLevel() {
+  let levelNumber = location.hash ? parseInt(location.hash.slice(1)) : 1;
+  levelNumber = (levelNumber+1) % 100;
+  location.hash = levelNumber;
+  fetchLevel(levelNumber);
+  showToast(`Loaded level ${levelNumber}`);
+}
+
+function next() {
+  if (checkSolved()) {
+    return nextLevel();
+  }
+
   if (solutionMoves.length === 0) {
-    showMessage('No solution loaded. Click "Solve" first.', 'error');
-    return;
+    return solve();
   }
   
   const move = solutionMoves.shift();
@@ -477,8 +478,8 @@ function stepSolution() {
 window.debug = {
   getState: () => bolts.map(b => [...b]),
   getCompleted: () => [...boltCompleted],
-  reset: () => resetGame(),
-  solve: () => solveGame()
+  reset: () => reset(),
+  solve: () => solve()
 };
 
 window.addEventListener('DOMContentLoaded', function() {
@@ -523,3 +524,14 @@ document.addEventListener('DOMContentLoaded', function() {
   let levelNumber = location.hash ? parseInt(location.hash.slice(1)) : 1;
   fetchLevel(levelNumber);
 });
+
+function showToast(message, title = 'Notification', duration = 2000) {
+  const toastEl = document.getElementById('tempToast');
+  toastEl.querySelector('.toast-body').textContent = message;
+  const toast = new bootstrap.Toast(toastEl, {
+    autohide: true,
+    delay: duration
+  });
+  toast.show();
+};
+
