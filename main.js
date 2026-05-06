@@ -2,7 +2,6 @@ let bolts = [];
 let boltCompleted = [];
 let selectedBolt = null;
 let solutionMoves = [];
-let currentMoveIndex = 0;
 let moveLog = [];
 let numBolts = 0;
 
@@ -57,7 +56,6 @@ function saveState() {
     boltCompleted: [...boltCompleted],
     selectedBolt: selectedBolt,
     solutionMoves: solutionMoves.map(m => ({...m})),
-    currentMoveIndex: currentMoveIndex,
     moveLog: [...moveLog]
   };
 }
@@ -67,7 +65,6 @@ function restoreState(state) {
   boltCompleted = [...state.boltCompleted];
   selectedBolt = state.selectedBolt;
   solutionMoves = state.solutionMoves.map(m => ({...m}));
-  currentMoveIndex = state.currentMoveIndex;
   moveLog = [...state.moveLog];
   
   updateMovesLog();
@@ -107,18 +104,10 @@ function updateSolutionDisplay() {
     return;
   }
   container.classList.remove('solution-empty');
-  const total = solutionMoves.length;
-  const remaining = total - currentMoveIndex;
-  let movesText = solutionMoves.map((move, idx) => {
+  const remaining = solutionMoves.length;
 
-    return `${idx===currentMoveIndex?'<b>':''} ${move.src+1}-${move.dst+1} ${idx===currentMoveIndex?'</b>':''}`;
-
-  }).join('\n');
-  if (currentMoveIndex >= total) {
-    movesText = `SOLVED! (${total} moves total)\n` + movesText;
-  } else {
-    movesText = `Move ${currentMoveIndex+1}/${total}: ` + movesText;
-  }
+  let movesText = solutionMoves.map((move, idx) => { return `${move.src + 1}-${move.dst + 1}`}).join('\n');  
+  movesText = `Moves remaining: ${remaining}\n<p>` + movesText;
   container.innerHTML = movesText;
 }
 
@@ -264,7 +253,6 @@ function updateOptions(options) {
 }
 
 function renderGame() {
-  //const colors = [...new Set(bolts.flat())];
   const colors = Object.keys(colorMap);
 
   colorRemap = {};
@@ -283,15 +271,11 @@ function renderGame() {
     }
   }
 
-  //console.log(colorShift, boltShift, colorRemap, boltRemap);
-
   const gameArea = document.getElementById('gameArea');
   gameArea.innerHTML = '';
 
   for (let k = 0; k < bolts.length; k++) {
     let i = boltRemap[k] ?? k;
-
-    //console.log('drawing bolt', i, 'was', k);
 
     const boltContainer = document.createElement('div');
     boltContainer.className = 'bolt-container';
@@ -348,11 +332,6 @@ function renderGame() {
 }
 
 function handleBoltClick(boltIndex) {
-  if (solutionMoves.length > 0 && currentMoveIndex < solutionMoves.length) {
-    showMessage('Auto-solver is active. Press Next Move or Reset to play manually.', 'error');
-    return;
-  }
-  
   if (boltCompleted[boltIndex]) {
     showMessage(`Bolt ${boltIndex + 1} is completed! Cannot move from or to completed bolts.`, 'error');
     return;
@@ -368,16 +347,24 @@ function handleBoltClick(boltIndex) {
       showMessage('Cannot select empty bolt!', 'error');
     }
   } else {
-    // If they click the same bolt again, do not unselect it. Just return.
     if (selectedBolt === boltIndex) {
       return;
     }
 
     if (makeMove(selectedBolt, boltIndex, true)) {
+      // Check if user deviated from the solution
+      if (solutionMoves.length > 0) {
+        if (solutionMoves[0].src === selectedBolt && solutionMoves[0].dst === boltIndex) {
+          solutionMoves.shift();
+        } else {
+          solutionMoves = [];
+        }
+        updateSolutionDisplay();
+      }
+      
       selectedBolt = null;
       renderGame();
     } else {
-      // Instead of throwing an error for an invalid move, just select the new bolt
       if (bolts[boltIndex].length > 0) {
         selectedBolt = boltIndex;
         renderGame();
@@ -400,7 +387,6 @@ function resetGame() {
     boltCompleted = new Array(bolts.length).fill(false);
     selectedBolt = null;
     solutionMoves = [];
-    currentMoveIndex = 0;
     moveLog = [];
     undoStack = [];
     redoStack = [];
@@ -427,7 +413,6 @@ function loadLevel() {
   boltCompleted = new Array(bolts.length).fill(false);
   selectedBolt = null;
   solutionMoves = [];
-  currentMoveIndex = 0;
   moveLog = [];
   undoStack = [];
   redoStack = [];
@@ -451,7 +436,6 @@ function solveGame() {
 
     if (solution && solution.length > 0) {
       solutionMoves = solution;
-      currentMoveIndex = 0;
       updateSolutionDisplay();
       showMessage(`Solution found! ${solutionMoves.length} moves. Click "Next Move" to execute.`, 'success');
     } else {
@@ -468,18 +452,11 @@ function stepSolution() {
     return;
   }
   
-  if (currentMoveIndex >= solutionMoves.length) {
-    showMessage('Solution complete!', 'success');
-    updateSolutionDisplay();
-    return;
-  }
-  
-  const move = solutionMoves[currentMoveIndex];
+  const move = solutionMoves.shift();
   
   if (makeMove(move.src, move.dst, true)) {
-    currentMoveIndex++;
     updateSolutionDisplay();
-    if (currentMoveIndex >= solutionMoves.length) {
+    if (solutionMoves.length === 0) {
       showMessage('Solution completed!', 'success');
     }
   } else {
