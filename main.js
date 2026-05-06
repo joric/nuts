@@ -228,14 +228,22 @@ function showMessage(msg, type) {
   const messageDiv = document.getElementById('message');
   messageDiv.className = `message ${type}`;
   messageDiv.textContent = msg;
-  setTimeout(function() {
-    if (document.getElementById('message').textContent === msg) {
-      messageDiv.className = 'message info';
-      let solved = checkSolved();
-      let message = solved ? 'Solved!' : 'Click on a bolt to select the top nut, then click on another bolt to move the nut';
-      messageDiv.textContent = message;
-    }
-  },2000);
+  if (document.getElementById('message').textContent === msg) {
+    messageDiv.className = 'message info';
+    let solved = checkSolved();
+    let message = solved ? 'Solved!' : 'Click on a bolt to select the top nut, then click on another bolt to move the nut';
+    messageDiv.textContent = message;
+  }
+}
+
+function showToast(message, title = 'Notification', duration = 2000) {
+  const toastEl = document.getElementById('tempToast');
+  toastEl.querySelector('.toast-body').textContent = message;
+  const toast = new bootstrap.Toast(toastEl, {
+    autohide: true,
+    delay: duration
+  });
+  toast.show();
 }
 
 function updateVar(name, options) {
@@ -433,13 +441,13 @@ function solveGame() {
     const boltsSnapshot = bolts.map(b => [...b]);
     const completedSnapshot = [...boltCompleted];
     const solution = findSolution(boltsSnapshot, completedSnapshot); // defined in solver.js
-
     if (solution && solution.length > 0) {
       solutionMoves = solution;
       updateSolutionDisplay();
-      showMessage(`Solution found! ${solutionMoves.length} moves. Click "Next Move" to execute.`, 'success');
+      showMessage(`Solution found! ${solutionMoves.length} moves. Click "Next" to advance.`, 'success');
+      document.querySelector('#nav-home-tab')?.click();
     } else {
-      showMessage('No solution found! The level might be unsolvable.', 'error');
+      showToast('No solution found! Position might be unsolvable.', 'error');
       solutionMoves = [];
       updateSolutionDisplay();
     }
