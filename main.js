@@ -246,7 +246,7 @@ function showMessage(msg, type) {
       let message = solved ? 'Solved!' : 'Click on a bolt to select the top nut, then click on another bolt to move the nut';
       messageDiv.textContent = message;
     }
-  },1000);
+  },2000);
 }
 
 function updateVar(name, options) {
