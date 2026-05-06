@@ -239,11 +239,14 @@ function showMessage(msg, type) {
   const messageDiv = document.getElementById('message');
   messageDiv.className = `message ${type}`;
   messageDiv.textContent = msg;
-  if (document.getElementById('message').textContent === msg) {
-    messageDiv.className = 'message info';
-    let solved = checkWinCondition();
-    messageDiv.textContent = solved ? 'Solved!' : 'Click on a bolt to select the top nut, then click on another bolt to move the nut';
-  }
+  setTimeout(function() {
+    if (document.getElementById('message').textContent === msg) {
+      messageDiv.className = 'message info';
+      let solved = checkSolved();
+      let message = solved ? 'Solved!' : 'Click on a bolt to select the top nut, then click on another bolt to move the nut';
+      messageDiv.textContent = message;
+    }
+  },1000);
 }
 
 function updateVar(name, options) {
@@ -438,13 +441,14 @@ function loadLevel() {
 function solveGame() {
   if (checkSolved()) {
     showMessage('Already solved!', 'info');
-    return
+    return;
   }
   showMessage('Solving... This may take a moment.', 'info');
   setTimeout(() => {
     const boltsSnapshot = bolts.map(b => [...b]);
     const completedSnapshot = [...boltCompleted];
     const solution = findSolution(boltsSnapshot, completedSnapshot); // defined in solver.js
+
     if (solution && solution.length > 0) {
       solutionMoves = solution;
       currentMoveIndex = 0;
