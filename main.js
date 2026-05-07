@@ -230,7 +230,7 @@ function showMessage(msg, type) {
   if (document.getElementById('message').textContent === msg) {
     messageDiv.className = 'message info';
     let solved = checkSolved();
-    let message = solved ? 'Solved! Click Next to load the next level.' : 'Click on a bolt to select the top nut, then click on another bolt to move the nut';
+    let message = solved ? 'Solved! Click "Next Move" to load the next level.' : 'Click on a bolt to select the top nut, then click on another bolt to move the nut';
     messageDiv.textContent = message;
   }
 }
