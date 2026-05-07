@@ -14,6 +14,8 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
 <script src="main.js"></script>
 <script src="solver.js"></script>
 
@@ -23,7 +25,6 @@
   justify-content: center;
   gap: 0px;
   flex-wrap: wrap;
-  background: #f0f0f0;
   border-radius: 15px;
   align-items: flex-end;
 }
@@ -129,14 +130,33 @@
 
 <body>
 
+<nav class="navbar bg-body-tertiary">
+  <div class="container">
+    <div class="row justify-content-center w-100">
+      <div class="col">
+        <div class="d-flex align-items-center w-100">
+          <a class="navbar-brand" href="#">Nuts and Bolts</a>
+          <div class="d-flex align-items-center ms-auto gap-2">
+            <label for="theme-switch" class="text-body cursor-pointer">
+              <i class="bi bi-sun"></i>
+            </label>
+            <div class="form-check form-switch m-0">
+              <input class="form-check-input" id="theme-switch" type="checkbox" role="switch">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
 <div class="container p-3">
-  <h1 class="text-center">Nuts and Bolts</h1>
 
   <div class="text-center pb-3">
     <div id="message">Click on a bolt to select it, then click on another bolt to move the top nut</div>
   </div>
 
-  <div class="game-area d-flex flex-wrap align-items-end bg-light p-2 rounded" id="gameArea">
+  <div class="game-area d-flex flex-wrap align-items-end bg-light p-2 rounded bg-body-tertiary" id="gameArea">
   </div>
 
   <div class="controls text-center p-3">

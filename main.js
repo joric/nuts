@@ -523,6 +523,17 @@ function select_level() {
 document.addEventListener('DOMContentLoaded', function() {
   let levelNumber = location.hash ? parseInt(location.hash.slice(1)) : 1;
   fetchLevel(levelNumber);
+
+  // Theme switcher
+  const x = document.querySelector('#theme-switch');
+  x.checked = localStorage.theme === 'dark';
+  document.documentElement.dataset.bsTheme = x.checked ? 'dark' : 'light';
+
+  x.onchange = _ => {
+    const mode = x.checked ? 'dark' : 'light';
+    localStorage.theme = mode;
+    document.documentElement.dataset.bsTheme = mode;
+  };
 });
 
 function showToast(message, title = 'Notification', duration = 2000) {
@@ -534,4 +545,3 @@ function showToast(message, title = 'Notification', duration = 2000) {
   });
   toast.show();
 };
-
