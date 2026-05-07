@@ -99,7 +99,7 @@ function updateSolutionDisplay() {
   const container = document.getElementById('solutionContent');
   if (!container) return;
   if (!solutionMoves || solutionMoves.length === 0) {
-    container.innerHTML = 'Click "Solve" to generate optimal moves. Then use "Next Move".';
+    container.innerHTML = 'Click "Next Move" to generate optimal moves.';
     container.classList.add('solution-empty');
     return;
   }
