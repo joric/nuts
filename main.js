@@ -427,21 +427,20 @@ function solve() {
     return;
   }
   showMessage('Solving... This may take a moment.', 'info');
-  setTimeout(() => {
-    const boltsSnapshot = bolts.map(b => [...b]);
-    const completedSnapshot = [...boltCompleted];
-    const solution = findSolution(boltsSnapshot, completedSnapshot); // defined in solver.js
-    if (solution && solution.length > 0) {
-      solutionMoves = solution;
-      updateSolutionDisplay();
-      showMessage(`Solution found! ${solutionMoves.length} moves. Click "Next" to advance.`, 'success');
-      document.querySelector('#nav-home-tab')?.click();
-    } else {
-      showToast('No solution found! Position might be unsolvable.', 'error');
-      solutionMoves = [];
-      updateSolutionDisplay();
-    }
-  }, 50);
+
+  const boltsSnapshot = bolts.map(b => [...b]);
+  const completedSnapshot = [...boltCompleted];
+  const solution = findSolution(boltsSnapshot, completedSnapshot); // defined in solver.js
+  if (solution && solution.length > 0) {
+    solutionMoves = solution;
+    updateSolutionDisplay();
+    showMessage(`Solution found! ${solutionMoves.length} moves. Click "Next" to advance.`, 'success');
+    document.querySelector('#nav-home-tab')?.click();
+  } else {
+    showToast('No solution found! Position might be unsolvable.', 'error');
+    solutionMoves = [];
+    updateSolutionDisplay();
+  }
 }
 
 function nextLevel() {
@@ -458,7 +457,7 @@ function next() {
   }
 
   if (solutionMoves.length === 0) {
-    return solve();
+    solve();
   }
   
   const move = solutionMoves.shift();
