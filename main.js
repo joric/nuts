@@ -433,11 +433,13 @@ function solve() {
     updateSolutionDisplay();
     showMessage(`Solution found! ${solutionMoves.length} moves. Click "Next" to advance.`, 'success');
     document.querySelector('#nav-home-tab')?.click();
-  } else {
-    showToast('No solution found! Position might be unsolvable.', 'error');
-    solutionMoves = [];
-    updateSolutionDisplay();
+    return true;
   }
+
+  showMessage('No solution found! Position might be unsolvable.', 'error');
+  solutionMoves = [];
+  updateSolutionDisplay();
+  return false;
 }
 
 function nextLevel() {
@@ -453,9 +455,13 @@ function next() {
     return nextLevel();
   }
 
-  if (solutionMoves.length === 0) {
-    solve();
+  let solved = solutionMoves.length !== 0;
+
+  if (!solved) {
+    solved = solve();
   }
+
+  if (!solved) return;
   
   const move = solutionMoves.shift();
   
