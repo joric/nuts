@@ -178,7 +178,7 @@ function makeMove(src, dst, record = true) {
   
   const nut = bolts[src].shift();
 
-  showMessage(`Moved ${nut} nut from bolt ${src+1} to bolt ${dst+1}`, 'info');
+  commentMove(nut, src, dst);
 
   bolts[dst].unshift(nut);
   
@@ -326,6 +326,14 @@ function renderGame() {
   gameArea.appendChild(ground);
 }
 
+function commentMove(topNut, boltIndex, destBoltIndex) {
+  if (!destBoltIndex) {
+    showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}. Select target bolt.`, 'info');
+  } else {
+    showMessage(`Moved ${topNut} nut from bolt ${boltIndex+1} to bolt ${destBoltIndex+1}`, 'info');
+  }
+}
+
 function handleBoltClick(boltIndex) {
   if (boltCompleted[boltIndex]) {
     showMessage(`Bolt ${boltIndex + 1} is completed! Cannot move from or to completed bolts.`, 'error');
@@ -337,7 +345,7 @@ function handleBoltClick(boltIndex) {
       selectedBolt = boltIndex;
       renderGame();
       const topNut = bolts[boltIndex][0];
-      showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}. Select target bolt.`, 'info');
+      commentMove(topNut, boltIndex);
     } else {
       showMessage('Cannot select empty bolt!', 'error');
     }
@@ -364,7 +372,7 @@ function handleBoltClick(boltIndex) {
         selectedBolt = boltIndex;
         renderGame();
         const topNut = bolts[boltIndex][0];
-        showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}. Select target bolt.`, 'info');
+        commentMove(topNut, boltIndex);
       } else {
         showMessage('Invalid move! Check color match and bolt capacity.', 'error');
         selectedBolt = null;
