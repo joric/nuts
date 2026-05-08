@@ -394,7 +394,7 @@ function reset() {
   }
 }
 
-function loadLevel() {
+function loadLevel(levelNumber) {
   const levelText = document.getElementById('levelInput').value;
   const parsed = parseLevel(levelText);
   
@@ -413,7 +413,7 @@ function loadLevel() {
   redoStack = [];
   updateMovesLog();
   renderGame();
-  showMessage('Level loaded! Click on bolts to play.', 'info');
+  showMessage(`Level ${levelNumber} loaded! Click on bolts to play.`, 'info');
   checkAndMarkCompletedBolts();
   updateSolutionDisplay();
 }
@@ -507,7 +507,7 @@ function fetchLevel(levelNumber) {
     .then(data => {
       textarea.value = data;
       select.selectedIndex = levelNumber-1;
-      loadLevel();
+      loadLevel(levelNumber);
     })
     .catch(error => {
       console.error('Error:', error);
