@@ -337,7 +337,7 @@ function handleBoltClick(boltIndex) {
       selectedBolt = boltIndex;
       renderGame();
       const topNut = bolts[boltIndex][0];
-      showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}.`, 'info');
+      showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}. Select target.`, 'info');
     } else {
       showMessage('Cannot select empty bolt!', 'error');
     }
@@ -364,7 +364,7 @@ function handleBoltClick(boltIndex) {
         selectedBolt = boltIndex;
         renderGame();
         const topNut = bolts[boltIndex][0];
-        showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}.`, 'info');
+        showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}. Select target.`, 'info');
       } else {
         showMessage('Invalid move! Check color match and bolt capacity.', 'error');
         selectedBolt = null;
@@ -413,7 +413,7 @@ function loadLevel(levelNumber) {
   redoStack = [];
   updateMovesLog();
   renderGame();
-  showMessage(`Level ${levelNumber} loaded! Click on bolts to play.`, 'info');
+  showMessage(`Level ${levelNumber} loaded! Click on a bolt to select a top nut.`, 'info');
   checkAndMarkCompletedBolts();
   updateSolutionDisplay();
 }
