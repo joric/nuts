@@ -445,7 +445,7 @@ function nextLevel() {
   levelNumber = (levelNumber+1) % 100;
   location.hash = levelNumber;
   fetchLevel(levelNumber);
-  showToast(`Loaded level ${levelNumber}`);
+  //showToast(`Loaded level ${levelNumber}`);
 }
 
 function next() {
