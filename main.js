@@ -218,7 +218,7 @@ function checkSolved() {
 
 function checkWinCondition() {
   if (checkSolved()) {
-    showMessage();
+    showMessage('Solved! Click "Next Move" to load the next level.', 'info');
     return true;
   }
   return false;
@@ -227,9 +227,7 @@ function checkWinCondition() {
 function showMessage(msg, type) {
   const messageDiv = document.getElementById('message');
   messageDiv.className = `message ${type}`;
-  let solved = checkSolved();
-  let message = solved ? 'Solved! Click "Next Move" to load the next level.' : 'Click on a bolt to select the top nut, then click on another bolt to move the nut';
-  messageDiv.textContent = message;
+  messageDiv.textContent = msg;
 }
 
 function updateVar(name, options) {
@@ -355,7 +353,9 @@ function handleBoltClick(boltIndex) {
         }
         updateSolutionDisplay();
       }
-      
+
+      showMessage(`Moved nut from bolt ${selectedBolt+1} to bolt ${boltIndex+1}`, 'info');
+
       selectedBolt = null;
       renderGame();
     } else {
