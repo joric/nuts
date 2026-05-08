@@ -462,7 +462,7 @@ function next() {
   if (makeMove(move.src, move.dst, true)) {
     updateSolutionDisplay();
     if (solutionMoves.length === 0) {
-      showMessage('Solution completed!', 'success');
+      showMessage('Solution completed! Press "Next" to load the next level.', 'success');
     }
   } else {
     showMessage('Error executing solution move!', 'error');
