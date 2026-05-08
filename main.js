@@ -337,7 +337,7 @@ function handleBoltClick(boltIndex) {
       selectedBolt = boltIndex;
       renderGame();
       const topNut = bolts[boltIndex][0];
-      showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}. Select target.`, 'info');
+      showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}. Select target bolt.`, 'info');
     } else {
       showMessage('Cannot select empty bolt!', 'error');
     }
@@ -364,7 +364,7 @@ function handleBoltClick(boltIndex) {
         selectedBolt = boltIndex;
         renderGame();
         const topNut = bolts[boltIndex][0];
-        showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}. Select target.`, 'info');
+        showMessage(`Selected ${topNut} top nut of bolt ${boltIndex + 1}. Select target bolt.`, 'info');
       } else {
         showMessage('Invalid move! Check color match and bolt capacity.', 'error');
         selectedBolt = null;
