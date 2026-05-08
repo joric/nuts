@@ -177,6 +177,9 @@ function makeMove(src, dst, record = true) {
   redoStack = [];
   
   const nut = bolts[src].shift();
+
+  showMessage(`Moved ${nut} nut from bolt ${src+1} to bolt ${dst+1}`, 'info');
+
   bolts[dst].unshift(nut);
   
   if (record) {
@@ -188,7 +191,7 @@ function makeMove(src, dst, record = true) {
   while (checkAndMarkCompletedBolts()) {
     renderGame();
   }
-  
+
   checkWinCondition();
   return true;
 }
@@ -334,7 +337,7 @@ function handleBoltClick(boltIndex) {
       selectedBolt = boltIndex;
       renderGame();
       const topNut = bolts[boltIndex][0];
-      showMessage(`Selected bolt ${boltIndex + 1} (top nut: ${topNut})`, 'info');
+      showMessage(`Selected bolt ${boltIndex + 1} (${topNut} nut)`, 'info');
     } else {
       showMessage('Cannot select empty bolt!', 'error');
     }
@@ -353,8 +356,6 @@ function handleBoltClick(boltIndex) {
         }
         updateSolutionDisplay();
       }
-
-      showMessage(`Moved nut from bolt ${selectedBolt+1} to bolt ${boltIndex+1}`, 'info');
 
       selectedBolt = null;
       renderGame();
